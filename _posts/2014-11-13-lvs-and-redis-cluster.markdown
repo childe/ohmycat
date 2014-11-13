@@ -3,6 +3,8 @@ layout: post
 title:  "利用LVS做redis集群"
 date:   2014-11-13 16:35:27 +0800
 modifydate:   2014-11-13 18:40:27 +0800
+abstract:   "1. 高可用. 每个服务器都跑一个(或者多个)redis-server实例, 一个实例挂了, 或者一个服务器当了, 可以无缝移交到另外的实例/服务器. 数据可能会有丢失,如果以后对数据可靠性有高要求,会配合dump,还有master slave, 现在暂不考虑. <br>
+2. 负载均衡. 只考虑高可用的话, 其实可以用keepalived, 一个redis-server/服务器挂了, VIP就转到另外一台, 但backup的那台机器就资源空闲着, 我们公司小, 不能这么浪费.."
 categories: ops net
 ---
 # 需求
