@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "访问为中的私有变量"
+title:  "访问python中的私有变量"
 date:   2014-11-14 22.58.01 +0800
 modifydate:   2014-11-14 22.58.01 +0800
 abstract:   python中没有私有变量, c++中也可以通过指针访问私有变量
