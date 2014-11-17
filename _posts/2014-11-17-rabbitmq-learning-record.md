@@ -1,9 +1,9 @@
 ---
 layout: post
-title:  rabbitmq
-date:   2014-11-16 13:15:00 +0800
-modifydate:   2014-11-16 13:15:00 +0800
-abstract:   "rabbitmq 学习.  一些基本概念, 以及一些我们做项目需要用到的知识点, 比如数据持久化, ACK, exchange to exchange, delay, ttl"
+title:  rabbitmq 学习记录
+date:   2014-11-17 01:27:00 +0800
+modifydate:   2014-11-17 01:27:00 +0800
+abstract:   " 一些基本概念, <br> 以及一些我们做项目需要用到的知识点, 比如数据持久化, ACK, exchange to exchange, delay, TTL"
 categories: ops rabbitmq
 ---
 
