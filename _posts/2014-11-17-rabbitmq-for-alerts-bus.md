@@ -3,7 +3,7 @@ layout: post
 title:  rabbitmq
 date:   2014-11-16 13:15:00 +0800
 modifydate:   2014-11-16 13:15:00 +0800
-abstract:   ""
+abstract:   "rabbitmq 学习.  一些基本概念, 以及一些我们做项目需要用到的知识点, 比如数据持久化, ACK, exchange to exchange, delay, ttl"
 categories: ops rabbitmq
 ---
 
