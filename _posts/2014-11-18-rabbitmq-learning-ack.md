@@ -69,11 +69,10 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
 
     def callback(ch, method, properties, body):
         print " [x] Received %r" % (body,)
-        time.sleep( body.count('.') )
         time.sleep(10)
         raise SystemExit(1)
-        print " [x] Done"
         ch.basic_ack(delivery_tag = method.delivery_tag)
+        print " [x] Done"
 
 
     def main():
@@ -85,7 +84,7 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
         channel.basic_consume(callback,
                               queue='hello',
                               )
-        channel.close()
+        channel.start_consuming()
 
     if __name__ == '__main__':
         main()
