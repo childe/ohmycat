@@ -101,6 +101,14 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
 > Listing queues ...
 > hello	1	0
 
+
+## REJECT
+
+可以用ACK告诉rabbitmq任务处理完了, 但是如果没有成功的话, 也可以再把消息塞回队列. 就是Negative Acknowledgement. pika对应的方法是basic_reject
+
+**但可得注意, 不要搞成死循环了**
+
+
 ## 数据持久化
 启用ack之后, 消费者死掉不会丢失数据, 但rabbitmq进程死掉的话, 消息就丢掉了. 为保证数据不丢失, 还需要启动数据持久化.
 需要在两个层面上做持久化:
