@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  rabbitmq 学习记录
+title:  rabbitmq 学习记录 -- ACK和数据持久化
 date:   2014-11-18 13:21:01 +0800
 modifydate:   2014-11-18 13:21:01 +0800
 abstract:   "ACK和数据持久化"
