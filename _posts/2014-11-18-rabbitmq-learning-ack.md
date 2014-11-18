@@ -10,13 +10,16 @@ categories: ops rabbitmq
 
 ## ACK
 
-消费者拿走一条消息之后, 还没有处理完就crash了. 那么这条消息就丢失了. 为了保证消息一定被处理完了, 就要启用Message acknowledgment .
-
 如果没有启用的话, 消费者拿走消息的时候, queue就把它删除了.
 
-启用之后, queue会在收到ack之后把消息删掉. 在这里没有timeout的概念, 哪怕这个任务执行很久, 不管多久, 会一直等ack. 或者是tcp链接断了, 才会把消息再给另外一个消费者.
+消费者拿走一条消息之后, 还没有处理完就crash了. 那么这条消息就丢失了. 为了保证消息一定被处理完了才从queue中被删掉, 就要启用Message acknowledgment .
+
+启用之后, queue会在收到ack之后把消息删掉. 
+
+在这里没有timeout的概念, 哪怕这个任务执行很久, 不管多久, 会一直等ack. 或者是tcp链接断了, 才会把消息再给另外一个消费者.
 
 ack默认是开启的, 也可以显示显示地关闭
+
 > channel.basic_consume(callback, queue=queue_name, no_ack=True) 
 
 
