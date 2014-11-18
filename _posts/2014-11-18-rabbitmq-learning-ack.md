@@ -27,9 +27,10 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
 
     def callback(ch, method, properties, body):
         print " [x] Received %r" % (body,)
-        time.sleep( body.count('.') )
-        print " [x] Done"
+        time.sleep( 10 )
+        raise SystemExit(1) # message will put back to the original queue
         ch.basic_ack(delivery_tag = method.delivery_tag)
+        print " [x] Done"
 
 来跑几个例子测试一下
 
