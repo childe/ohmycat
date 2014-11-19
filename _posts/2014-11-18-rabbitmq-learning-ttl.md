@@ -2,7 +2,7 @@
 layout: post
 title:  rabbitmq 学习记录 -- TTL
 date:   2014-11-18 15:43:07 +0800
-modifydate:   2014-11-18 15:43:07 +0800
+modifydate:   2014-11-19 16:41:17 +0800
 abstract:   "TTL有三个层面, 可以配置在队列本身, 也可以针对队列里面的所有消息, 也可以配置在每一条消息上. <br>  队列过期之后,会自动删除,不管里面是不是还有消息. 消息到了TTL后自动被移除"
 categories: ops rabbitmq
 ---
