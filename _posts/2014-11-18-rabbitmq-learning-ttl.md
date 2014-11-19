@@ -127,3 +127,5 @@ messageTTLSend.py
 > Listing queues ...  
 > hello	0  
 
+
+**最后, 如per-message ttl 和 per-queue message ttl不一样, 按小的来.**
