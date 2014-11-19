@@ -130,18 +130,3 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
 **Q: 如果在一个非持久化的队列上发送数据时, 指明要持久化, 为发生什么情况?**
 
 A:  可以正常发送, 但重启rabbitmq之后, 队列丢失, 当然消息找不到了.
-
-# delay
-占位
-
-# ttl
-占位
-
-# exchange to exchange
-https://www.rabbitmq.com/e2e.html
-占位
-
-
-#权限控制
-https://www.rabbitmq.com/access-control.html
-占位
