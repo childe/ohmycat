@@ -9,4 +9,4 @@ url: "http://heychilde.me" # the base hostname & protocol for your site
 github_username:  childe
 
 # Build settings
-markdown: kramdown
+markdown: redcarpet
