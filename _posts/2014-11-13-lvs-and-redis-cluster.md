@@ -36,29 +36,34 @@ VIP在master上, round robin转连接到其中一个服务器. (每个客户过�
 
 
 # 环境
-    #uname -a
-    Linux VMS02564 2.6.18-308.el5 #1 SMP Tue Feb 21 20:06:06 EST 2012 x86_64 x86_64 x86_64 GNU/Linux
 
-    #cat /etc/*release
-    CentOS release 5.8 (Final)
+```sh
+#uname -a
+Linux VMS02564 2.6.18-308.el5 #1 SMP Tue Feb 21 20:06:06 EST 2012 x86_64 x86_64 x86_64 GNU/Linux
+
+#cat /etc/*release
+CentOS release 5.8 (Final)
+```
 
 # 实现
 ## 软件准备起来
 ### 安装lvs内核模块, 这个默认已经安装了
 
-     modprobe -l|grep -i ipvs
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_dh.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_ftp.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lblc.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lblcr.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lc.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_nq.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_rr.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_sed.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_sh.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_wlc.ko
-    /lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_wrr.ko
+```sh
+# modprobe -l|grep -i ipvs
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_dh.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_ftp.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lblc.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lblcr.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_lc.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_nq.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_rr.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_sed.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_sh.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_wlc.ko
+/lib/modules/2.6.18-308.el5/kernel/net/ipv4/ipvs/ip_vs_wrr.ko
+```
 
 ### 安装ipvsadm.  
 yum就可以安装. 这个其实有没有都行, 是管理lvs用的. 还没有仔细看用法 , 以后会看看
@@ -70,64 +75,73 @@ yum就可以安装. 这个其实有没有都行, 是管理lvs用的. 还没有�
 
 ### keepalived配置
 
-    vrrp_instance VI_1 {
-        state MASTER			#以master启动, 若别的节点优先级高,转成backup
-        interface eth0
-        virtual_router_id 51  	#node之间的ID要一样
-        priority 100				#优先级大的做master
-        advert_int 1
-        authentication {
-            auth_type PASS		#节点间的认证方式
-            auth_pass 1111			#节点间一致
-        }
-        virtual_ipaddress {
-            192.168.81.229
-        }
+```ini
+vrrp_instance VI_1 {
+    state MASTER			#以master启动, 若别的节点优先级高,转成backup
+    interface eth0
+    virtual_router_id 51  	#node之间的ID要一样
+    priority 100				#优先级大的做master
+    advert_int 1
+    authentication {
+        auth_type PASS		#节点间的认证方式
+        auth_pass 1111			#节点间一致
     }
+    virtual_ipaddress {
+        192.168.81.229
+    }
+}
 
-    #虚拟主机配置
-    virtual_server 192.168.81.229 6379 {  #设置VIP port 
-        delay_loop 6            #每个6秒检查一次real_server状态 
-        lb_algo rr              #lvs调度算法这里使用加权轮询 有：rr|wrr|lc|wlc|lblc|sh|dh 
-        lb_kind DR              #负载均衡转发规则NAT|DR|TUN 
-        #persistence_timeout 60 #会话保持时间 
-        protocol TCP            #使用协议TCP或者UDP 
-     
-        real_server 192.168.81.51 6379 { 
-            weight 50
-            TCP_CHECK {                 #tcp健康检查 
-                #connect_timeout 3      #连接超时时间 
-                #nb_get_retry 2         #重连次数 
-                #delay_before_retry 3   #重连间隔时间 
-                connect_port 6379       #健康检查端口 
-                } 
-        } 
-        real_server 192.168.81.234 6379 { 
-            weight 50
-                TCP_CHECK {             #tcp健康检查 
-                connect_port 6379       #健康检查端口 
+#虚拟主机配置
+virtual_server 192.168.81.229 6379 {  #设置VIP port 
+    delay_loop 6            #每个6秒检查一次real_server状态 
+    lb_algo rr              #lvs调度算法这里使用加权轮询 有：rr|wrr|lc|wlc|lblc|sh|dh 
+    lb_kind DR              #负载均衡转发规则NAT|DR|TUN 
+    #persistence_timeout 60 #会话保持时间 
+    protocol TCP            #使用协议TCP或者UDP 
+ 
+    real_server 192.168.81.51 6379 { 
+        weight 50
+        TCP_CHECK {                 #tcp健康检查 
+            #connect_timeout 3      #连接超时时间 
+            #nb_get_retry 2         #重连次数 
+            #delay_before_retry 3   #重连间隔时间 
+            connect_port 6379       #健康检查端口 
             } 
+    } 
+    real_server 192.168.81.234 6379 { 
+        weight 50
+            TCP_CHECK {             #tcp健康检查 
+            connect_port 6379       #健康检查端口 
         } 
-     } 
+    } 
+ } 
+ ```
 
 分两部分, 上半部分是建一个vrrp实例(什么是vrrp?). 如果不要下面的虚拟主机配置,就是HA, redis client会连到当前VIP所在的节点. keepalived挂了之后, backup会变成master,VIP换到新的master上面. 但这样不能做Load balance.
 
 > 手工配置虚IP  
 配置:  
-ifconfig eth0:1 VIP netmask 255.255.255.0  
-删除:  
-ifconfig ethos:1 down
 
+```sh
+ifconfig eth0:1 VIP netmask 255.255.255.0  
+```
+删除:  
+
+```sh
+ifconfig ethos:1 down
+```
 
 下半部分, 就是load balance配置了. 我想, keepalived就是按照这个配置去配置了一下lvs. 用ipvsadm可以看到.
 
-    #ipvsadm
-    IP Virtual Server version 1.2.1 (size=4096)
-    Prot LocalAddress:Port Scheduler Flags
-      -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
-    TCP  192.168.81.229:6379 rr
-      -> 192.168.81.234:6379          Route   1      0          0
-      -> VMS02245:6379                Local   1      0          0
+```sh
+#ipvsadm
+IP Virtual Server version 1.2.1 (size=4096)
+Prot LocalAddress:Port Scheduler Flags
+  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
+TCP  192.168.81.229:6379 rr
+  -> 192.168.81.234:6379          Route   1      0          0
+  -> VMS02245:6379                Local   1      0          0
+```
 
 两个节点上起来keepalived就可以了, 吗?  如果不需要LB, 只做HA,只要上半部分配置,跑起来就好了. 但如果要LB,还需要下面的系统配置.
 
@@ -149,27 +163,33 @@ ifconfig ethos:1 down
 
 由于DR转发只是改了目的MAC地址,目的IP并没有变,还是VIP, 所以如果realserver上面没有配置这个VIP,包会被直接丢弃. 所以,必须在realserver上面也配置一个掩码为32的VIP,如下:
 
-	ifconfig lo:1 VIP netmask 255.255.255.0 up
+```sh
+ifconfig lo:1 VIP netmask 255.255.255.0 up
+```
 	
 但是这样, 带来一个麻烦问题: 有人问谁的IP是192.168.81.229的时候, 这两个网卡都说, 是我是我是我. 那包发给谁呢, 那就看谁的回答`先`到了. 看图:
 
-    #tcpdump -e -nn host 192.168.81.229
-    tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
-    listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
-    22:27:50.720431 00:50:56:92:05:b9 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.81.229 tell 192.168.81.156
-    22:27:50.720858 00:50:56:92:4d:6d > 00:50:56:92:05:b9, ethertype ARP (0x0806), length 60: arp reply 192.168.81.229 is-at 00:50:56:92:4d:6d
-    22:27:50.720881 00:50:56:92:05:b9 > 00:50:56:92:4d:6d, ethertype IPv4 (0x0800), length 98: 192.168.81.156 > 192.168.81.229: ICMP echo request, id 31307, seq 1, length 64
-    22:27:50.721040 00:50:56:92:36:44 > 00:50:56:92:05:b9, ethertype ARP (0x0806), length 60: arp reply 192.168.81.229 is-at 00:50:56:92:36:44
-    22:27:50.721130 00:50:56:92:4d:6d > 00:50:56:92:05:b9, ethertype IPv4 (0x0800), length 98: 192.168.81.229 > 192.168.81.156: ICMP echo reply, id 31307, seq 1, length 64
+```sh
+# tcpdump -e -nn host 192.168.81.229
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), capture size 96 bytes
+22:27:50.720431 00:50:56:92:05:b9 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: arp who-has 192.168.81.229 tell 192.168.81.156
+22:27:50.720858 00:50:56:92:4d:6d > 00:50:56:92:05:b9, ethertype ARP (0x0806), length 60: arp reply 192.168.81.229 is-at 00:50:56:92:4d:6d
+22:27:50.720881 00:50:56:92:05:b9 > 00:50:56:92:4d:6d, ethertype IPv4 (0x0800), length 98: 192.168.81.156 > 192.168.81.229: ICMP echo request, id 31307, seq 1, length 64
+22:27:50.721040 00:50:56:92:36:44 > 00:50:56:92:05:b9, ethertype ARP (0x0806), length 60: arp reply 192.168.81.229 is-at 00:50:56:92:36:44
+22:27:50.721130 00:50:56:92:4d:6d > 00:50:56:92:05:b9, ethertype IPv4 (0x0800), length 98: 192.168.81.229 > 192.168.81.156: ICMP echo reply, id 31307, seq 1, length 64
+```
 
 在另外一台主机C上Ping 192.168.81.229的时候, 两个节点都说229在这里. C主机选择最先回答的主机发了icmp包. 这太不靠谱了, 我们一定要让我们的包发到真正的主机上.
 
 还好Linux系统有个关于arp请求响应的配置~
 
-    echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
-    echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
+```sh
+echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
+echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
+```
 
 关于这个配置及其含义:
 
@@ -227,87 +247,98 @@ the level announces more valid sender's information.
 
 
 #### 配置lo
-    ifconfig lo:1 VIP netmask 255.255.255.0 up 
+
+```sh
+ifconfig lo:1 VIP netmask 255.255.255.0 up 
+```
 
 #### 配置arp
-    echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
-    echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
+
+```sh
+echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
+echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
+```
 
 ### 同时只能有一个节点上跑lvs转发
   如果两个上面都跑了相同配置的keepalived, 那么A转到B的数据, B再转给A, A再转给B, B再转给A, 就是不回给你... 所以呢, 同时只能在一个上面跑lvs.
   我本来想, keepalive应该支持这种配置,就是变成master的时候,才激活某些配置(比如说virtual server),但好像是不行. 于是只能用一种比较绕的方式了, 话不多话, 最终配置上图:
   
-\#cat master.conf
+**master.conf**
 
-    global_defs {
-       router_id LVS_DEVEL
+```ini
+global_defs {
+   router_id LVS_DEVEL
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface eth0
+    virtual_router_id 51
+    priority 99
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass 1111
     }
-
-    vrrp_instance VI_1 {
-        state BACKUP
-        interface eth0
-        virtual_router_id 51
-        priority 99
-        advert_int 1
-        authentication {
-            auth_type PASS
-            auth_pass 1111
-        }
-        virtual_ipaddress {
-            192.168.81.229/24
-        }
-        notify_master "/etc/keepalived/notify_master.sh"
-        notify_backup "/etc/keepalived/notify_backup.sh"
+    virtual_ipaddress {
+        192.168.81.229/24
     }
+    notify_master "/etc/keepalived/notify_master.sh"
+    notify_backup "/etc/keepalived/notify_backup.sh"
+}
 
-    virtual_server 192.168.81.229 6379 {
-        delay_loop 6
-        lb_algo rr
-        lb_kind DR
-        persistence_timeout 0
-        protocol TCP
+virtual_server 192.168.81.229 6379 {
+    delay_loop 6
+    lb_algo rr
+    lb_kind DR
+    persistence_timeout 0
+    protocol TCP
 
-        real_server 192.168.81.51 6379 {
-            weight 1
-            TCP_CHECK {
-              connect_port    6379
-              connect_timeout 3
-            }
-        }
-        real_server 192.168.81.234 6379 {
-            weight 1
-            TCP_CHECK {
-              connect_port    6379
-              connect_timeout 3
-            }
+    real_server 192.168.81.51 6379 {
+        weight 1
+        TCP_CHECK {
+          connect_port    6379
+          connect_timeout 3
         }
     }
+    real_server 192.168.81.234 6379 {
+        weight 1
+        TCP_CHECK {
+          connect_port    6379
+          connect_timeout 3
+        }
+    }
+}
+```
 
-\#cat notify_master.sh
+**notify_master.sh**
 
-    #!/bin/sh
-    echo “0” >/proc/sys/net/ipv4/conf/lo/arp_ignore
-    echo “0” >/proc/sys/net/ipv4/conf/lo/arp_announce
-    echo “0” >/proc/sys/net/ipv4/conf/all/arp_ignore
-    echo “0” >/proc/sys/net/ipv4/conf/all/arp_announce  
-    diff /etc/keepalived/keepalived.conf /etc/keepalived/master.conf
-    if test "$?" != "0"; then
-        cp /etc/keepalived/master.conf /etc/keepalived/keepalived.conf
-        killall -HUP keepalived
-    fi
-    ```
+```sh
+#!/bin/sh
+echo “0” >/proc/sys/net/ipv4/conf/lo/arp_ignore
+echo “0” >/proc/sys/net/ipv4/conf/lo/arp_announce
+echo “0” >/proc/sys/net/ipv4/conf/all/arp_ignore
+echo “0” >/proc/sys/net/ipv4/conf/all/arp_announce  
+diff /etc/keepalived/keepalived.conf /etc/keepalived/master.conf
+if test "$?" != "0"; then
+    cp /etc/keepalived/master.conf /etc/keepalived/keepalived.conf
+    killall -HUP keepalived
+fi
+```
 
-    \#cat notify_backup.sh
-    ```
-    #!/bin/sh
-    echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
-    echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
-    echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
-    diff /etc/keepalived/keepalived.conf /etc/keepalived/backup.conf
-    if test "$?" != "0"; then
-        cp /etc/keepalived/backup.conf /etc/keepalived/keepalived.conf
-        killall -HUP keepalived
-    fi
+**notify_backup.sh**
+
+```sh
+#!/bin/sh
+echo "1" >/proc/sys/net/ipv4/conf/lo/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/lo/arp_announce
+echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
+echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
+diff /etc/keepalived/keepalived.conf /etc/keepalived/backup.conf
+if test "$?" != "0"; then
+    cp /etc/keepalived/backup.conf /etc/keepalived/keepalived.conf
+    killall -HUP keepalived
+fi
+```

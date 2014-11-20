@@ -52,30 +52,32 @@ exchange有四种类型, 每种有不同的路由方式~
     发送到direct的消息, 会找到和routing key一样的binding key的队列, 发过去.
     一般来说, 这种exchange就是为了点对点的发消息, 一个消息就是固定发到一个特定的queue中. 但是一定要用来发到多个queue也是可以的.
 
-        #!/usr/bin/env python  
-        # -*- coding: utf-8 -*-
-        import pika
-        import sys
+```py
+#!/usr/bin/env python  
+# -*- coding: utf-8 -*-
+import pika
+import sys
 
-        def main():        
-            body = ' '.join(sys.argv[1:]) or 'Hello World'
-            
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-            channel = connection.channel()
-             
-            channel.queue_declare(queue='hello1')
-            channel.queue_bind(exchange='amq.direct', queue='hello1',routing_key="hello")
-        
-            channel.queue_declare(queue='hello2')
-            channel.queue_bind(exchange='amq.direct', queue='hello2',routing_key="hello")
-        
-            channel.basic_publish(exchange='amq.direct',
-                                routing_key='hello',
-                                body=body)
-            connection.close()
-        
-        if __name__ == '__main__':
-            main()
+def main():        
+    body = ' '.join(sys.argv[1:]) or 'Hello World'
+    
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+     
+    channel.queue_declare(queue='hello1')
+    channel.queue_bind(exchange='amq.direct', queue='hello1',routing_key="hello")
+
+    channel.queue_declare(queue='hello2')
+    channel.queue_bind(exchange='amq.direct', queue='hello2',routing_key="hello")
+
+    channel.basic_publish(exchange='amq.direct',
+                        routing_key='hello',
+                        body=body)
+    connection.close()
+
+if __name__ == '__main__':
+    main()
+```
             
 2.  fanout
 

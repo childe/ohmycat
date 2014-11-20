@@ -23,11 +23,13 @@ preprocess是我们的一个用户, preprocessed rawevent是两个virtual host.
 针对一个 virtual host, 按顺序分别列出了configure, write, read的权限  <D-r>
 对于rawevent这个virtual host, 我们的configure权限是^$, write是^$, read是^rawevent$  , 没错, 就是普通的正则表达式.
 
-> \# rabbitmqctl list_user_permissions preprocess  
-> Listing permissions for user "preprocess" ...  
-> preprocessed    ^$      ^amq\\.default$ ^$  
-> rawevent        ^$      ^$      ^rawevent$  
-> ...done
+```sh
+# rabbitmqctl list_user_permissions preprocess  
+Listing permissions for user "preprocess" ...  
+preprocessed    ^$      ^amq\\.default$ ^$  
+rawevent        ^$      ^$      ^rawevent$  
+...done
+```
 
 
 ## 来几个例子

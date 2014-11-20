@@ -15,117 +15,127 @@ categories: ops rabbitmq
 
 **不管里面是不是还有消息没有消费**
 
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-    '''
-    the queue exists for only 5 seconds, whether there is messages!
-    '''
-    import pika
-    import sys
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+the queue exists for only 5 seconds, whether there is messages!
+'''
+import pika
+import sys
 
 
-    def main():
-        body = ' '.join(sys.argv[1:]) or 'Hello World'
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='ttlhello',arguments={"x-expires":5000}) # ttl 5 second
-        channel.basic_publish(exchange='',
-                              routing_key='ttlhello',
-                              body=body,
-                              )
-        connection.close()
+def main():
+    body = ' '.join(sys.argv[1:]) or 'Hello World'
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='ttlhello',arguments={"x-expires":5000}) # ttl 5 second
+    channel.basic_publish(exchange='',
+                          routing_key='ttlhello',
+                          body=body,
+                          )
+    connection.close()
 
-    if __name__ == '__main__':
-        main()
+if __name__ == '__main__':
+    main()
+```
 
 跑一下看看效果
 
-> \# python queueTTL.py ;sleep 1; rabbitmqctl list_queues; sleep 6;rabbitmqctl list_queues  
-> Listing queues ...  
-> ttlhello	1  
-> Listing queues ...  
+```sh
+# python queueTTL.py ;sleep 1; rabbitmqctl list_queues; sleep 6;rabbitmqctl list_queues  
+Listing queues ...  
+ttlhello	1  
+Listing queues ...  
+```
 
 
 # Per-Queue Message TTL
 
 这个也是队列的属性, 而不是消息的. 队列中的所有消息过了TTL就会被删除.
 
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-    '''
-    the messages in the queue exist for only 5 seconds
-    '''
-    import pika
-    import sys
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+the messages in the queue exist for only 5 seconds
+'''
+import pika
+import sys
 
 
-    def main():
-        body = ' '.join(sys.argv[1:]) or 'Hello World'
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='ttlmessagehello',arguments={"x-message-ttl":5000}) # ttl 5 second
-        channel.basic_publish(exchange='',
-                              routing_key='ttlmessagehello',
-                              body=body,
-                              )
-        connection.close()
+def main():
+    body = ' '.join(sys.argv[1:]) or 'Hello World'
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='ttlmessagehello',arguments={"x-message-ttl":5000}) # ttl 5 second
+    channel.basic_publish(exchange='',
+                          routing_key='ttlmessagehello',
+                          body=body,
+                          )
+    connection.close()
 
-    if __name__ == '__main__':
-        main()
-
+if __name__ == '__main__':
+    main()
+```
 
 跑一下看看效果
 
-> \# python queueMessageTTL.py; rabbitmqctl list_queues; sleep 6; rabbitmqctl list_queues  
-> Listing queues ...  
-> ttlmessagehello	1  
-> Listing queues ...  
-> ttlmessagehello	0  
-
+```sh
+# python queueMessageTTL.py; rabbitmqctl list_queues; sleep 6; rabbitmqctl list_queues  
+Listing queues ...  
+ttlmessagehello	1  
+Listing queues ...  
+ttlmessagehello	0  
+```
 
 #Per-Message TTL
 
 发送消息的时候, 也可以给每条消息一个TTL的属性. 
 
-messageTTLSend.py
+**messageTTLSend.py**
 
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-    import pika
-    import sys
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import pika
+import sys
 
 
-    def main():
-        body = ' '.join(sys.argv[1:]) or 'Hello World'
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='hello')
-        channel.basic_publish(exchange='',
-                              routing_key='hello',
-                              body=body,
-                              properties=pika.BasicProperties(
-                                  expiration="5000"
-                                 )
+def main():
+    body = ' '.join(sys.argv[1:]) or 'Hello World'
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='hello')
+    channel.basic_publish(exchange='',
+                          routing_key='hello',
+                          body=body,
+                          properties=pika.BasicProperties(
+                              expiration="5000"
+                             )
 
-                              )
-        connection.close()
+                          )
+    connection.close()
 
-    if __name__ == '__main__':
-        main()
+if __name__ == '__main__':
+    main()
+```
 
 跑一下看看效果
 
-> \# python messageTTLSend.py; rabbitmqctl list_queues; sleep 6; rabbitmqctl list_queues;  
-> Listing queues ...  
-> hello	1  
-> Listing queues ...  
-> hello	0  
+```sh
+# python messageTTLSend.py; rabbitmqctl list_queues; sleep 6; rabbitmqctl list_queues;  
+Listing queues ...  
+hello	1  
+Listing queues ...  
+hello	0  
+```
 
 
 **最后, 如per-message ttl 和 per-queue message ttl不一样, 按小的来.**

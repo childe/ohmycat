@@ -20,86 +20,98 @@ categories: ops rabbitmq
 
 ack默认是开启的, 也可以显示显示地关闭
 
-> channel.basic_consume(callback, queue=queue_name, no_ack=True) 
+```py
+channel.basic_consume(callback, queue=queue_name, no_ack=True) 
+```
 
 
 callbak里面要记得发送ack,否则消息要被一次又一次的处理,然后再次回到队列 ... ...
 
-    def callback(ch, method, properties, body):
-        print " [x] Received %r" % (body,)
-        time.sleep( 10 )
-        raise SystemExit(1) # message will put back to the original queue
-        ch.basic_ack(delivery_tag = method.delivery_tag)
-        print " [x] Done"
+```py
+def callback(ch, method, properties, body):
+    print " [x] Received %r" % (body,)
+    time.sleep( 10 )
+    raise SystemExit(1) # message will put back to the original queue
+    ch.basic_ack(delivery_tag = method.delivery_tag)
+    print " [x] Done"
+```
 
 来跑几个例子测试一下
 
 生产者:
 
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-    import pika
-    import sys
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import pika
+import sys
 
 
-    def main():
-        body = ' '.join(sys.argv[1:]) or 'Hello World'
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='hello')
-        channel.basic_publish(exchange='',
-                              routing_key='hello',
-                              body=body,
-                              )
-        connection.close()
+def main():
+    body = ' '.join(sys.argv[1:]) or 'Hello World'
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='hello')
+    channel.basic_publish(exchange='',
+                          routing_key='hello',
+                          body=body,
+                          )
+    connection.close()
 
-    if __name__ == '__main__':
-        main()
-
+if __name__ == '__main__':
+    main()
+```
 
 消费者:
 
-    #!/usr/bin/env python
-    # -*- coding: utf-8 -*-
-    import pika
-    import time
+```py
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import pika
+import time
 
 
-    def callback(ch, method, properties, body):
-        print " [x] Received %r" % (body,)
-        time.sleep(10)
-        raise SystemExit(1)
-        ch.basic_ack(delivery_tag = method.delivery_tag)
-        print " [x] Done"
+def callback(ch, method, properties, body):
+    print " [x] Received %r" % (body,)
+    time.sleep(10)
+    raise SystemExit(1)
+    ch.basic_ack(delivery_tag = method.delivery_tag)
+    print " [x] Done"
 
 
-    def main():
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host='localhost'))
-        channel = connection.channel()
-        channel.queue_declare(queue='hello')
-        channel.basic_consume(callback,
-                              queue='hello',
-                              )
-        channel.start_consuming()
+def main():
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue='hello')
+    channel.basic_consume(callback,
+                          queue='hello',
+                          )
+    channel.start_consuming()
 
-    if __name__ == '__main__':
-        main()
+if __name__ == '__main__':
+    main()
+```
+
 
 发送一条消息到队列 , 然后消费. 观察一下状态 
 
-> \# rabbitmqctl list_queues name messages_ready messages_unacknowledged
-> Listing queues ...
-> hello	0	1
+```sh
+# rabbitmqctl list_queues name messages_ready messages_unacknowledged
+Listing queues ...
+hello	0	1
+```
 
 等10秒, 再看, 消息没有被消费成功, 再次回到队列中.
 
-> \# rabbitmqctl list_queues name messages_ready messages_unacknowledged
-> Listing queues ...
-> hello	1	0
+```sh
+# rabbitmqctl list_queues name messages_ready messages_unacknowledged
+Listing queues ...
+hello	1	0
+```
 
 
 ## REJECT
@@ -115,17 +127,21 @@ callbak里面要记得发送ack,否则消息要被一次又一次的处理,然�
 1. 队列的持久化
 2. 消息的持久化
 
-> channel.queue_declare(queue='hello', durable=True)
+```py
+channel.queue_declare(queue='hello', durable=True)
+```
   
 这样就申明了一个持久化的队列, durable的属性是不会变的, 如果之前hello队列已经申明过且不是持久化的, 这个再次申明会失败.
 这个队列不会因为rabbitmq重启而丢失, 接下来还要继续做消息的持久化.
 
-    channel.basic_publish(exchange='',
-                         routing_key="task_queue",
-                         body=message,
-                         properties=pika.BasicProperties(
-                            delivery_mode = 2, # make message persistent
-                         ))
+```py
+channel.basic_publish(exchange='',
+                     routing_key="task_queue",
+                     body=message,
+                     properties=pika.BasicProperties(
+                        delivery_mode = 2, # make message persistent
+                     ))
+```
 
 **Q: 如果在一个非持久化的队列上发送数据时, 指明要持久化, 为发生什么情况?**
 
