@@ -1,7 +1,7 @@
 # Site settings
 title: 派猴子来的救兵
 email: heychilde@gmail.com
-description: > # this means to ignore newlines until "baseurl:"
+description: 
 
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "http://heychilde.me" # the base hostname & protocol for your site
