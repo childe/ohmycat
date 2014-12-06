@@ -80,7 +80,27 @@ li {
  * Headings
  */
 h1, h2, h3, h4, h5, h6 {
-    font-weight: 300;
+   color: #404040;
+   line-height: 36px;
+}
+h1 {
+   margin-bottom: 18px;
+   font-size: 30px;
+}
+h2 {
+   font-size: 24px;
+}
+h3 {
+   font-size: 18px;
+}
+h4 {
+   font-size: 16px;
+}
+h5 {
+   font-size: 14px;
+}
+h6 {
+   font-size: 13px;
 }
 
 
