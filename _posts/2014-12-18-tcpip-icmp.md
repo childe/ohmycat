@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "tcp/ip协议学习 第四章 ICMP:Internet控制报文协议"
+title:  "tcp/ip协议学习 第六章 ICMP:Internet控制报文协议"
 date:   2014-12-18 01:54:50 +0800
 modifydate:   2014-12-18 01:54:50 +0800
 abstract:   "1. 在我看来, ICMP协议主要就是为了互相传递/查询一些基本信息, 大部分是传递一些错误信息.
