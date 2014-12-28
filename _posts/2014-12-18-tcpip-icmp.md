@@ -68,4 +68,4 @@ tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 65535 byte
 
 
 # ping
-最重要的PING的实现还没有写. 后面补上.
+[代码还是放在github了.](https://github.com/childe/tcpip-learning/blob/master/ping.py)
