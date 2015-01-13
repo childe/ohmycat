@@ -2,7 +2,7 @@
 layout: post
 title:  "kibana4打包和安装"
 date:   2014-12-13 23:08:22 +0800
-modifydate:   2014-12-13 23:08:22 +0800
+modifydate:   2015-01-13 19:14:14 +0800
 abstract:   "对于Kibana4,官方只提供了一个打包好的JAVA的包. 如果想自己修改一些代码添加一些自定义功能, impossible. 至少我还是希望能像Kibana3一样,就是一普通的hmlt静态网站,放在nginx下面跑. 可以添加一些自己的panel. 好吧, 虽然Kibana4好像已经不需要添加什么panel了,但改改css, html总行吧. 而且还可以利用nginx做一些权限控制什么的.<br>
 虽然github有源码了,但做为一个新手, 对于grunt这些东西只是有最最最基本的一些了解,还是折腾了一会才搞定. 纪录一下."
 categories: elasticsearch
@@ -108,4 +108,36 @@ categories: elasticsearch
     ```
     最重要的elasticsearch的配置, 居然不是放在配置文件里, 而是写在代码里面了. 这里改成真正的elasticsearch的地址就可以了. 我觉得也是用jruby跑web service时做了配置+映射之类吧. 不管了.
 
+10. k4要求ES版本至少也是1.4. 但其实1.3版本的也可以正常使用. 我们就是1.3. 暂时也没打算升级. 限制的代码在index.js里面, 改成```constant('minimumElasticsearchVersion', '1.3.0')```就OK了.
+
 OVER.
+
+
+# 补充:
+## beta3出来了, 结果又有些问题, 我还记一下.
+
+1. kibana4的默认索引名字
+    上面的config里面 kibanaIndex改名为kibana_index.
+
+    所以config里面也改成了
+
+    ```
+    "kibana_index": ".kibana",
+    ```
+
+    **这个不完全确定, 没仔细看过代码,读取配置的逻辑如何** 发现有问题我再改.
+
+2. script_fileds
+
+    安全起见, 我们的ES禁用script. 
+
+    但是k4有些请求, 至少在找index pattern的时候, 使用了script_fileds.
+
+    我简单粗暴的把components/courier/data_source/_abstract.js里面带script_fileds的代码注释了...  
+    目前还没有发现副作用, 先这样用吧.
+
+3. 要设置一个默认index pattern
+
+    新建index pattern之后, 要设置一个为默认. 否则k4有些2去找名叫.kibana这个index pattern, 当然找不到, 就报错了.  
+    beta2还没这个要求.  
+    我也不是完全确认就是这个原因造成的, 但的确设置一个默认之后就好了.
