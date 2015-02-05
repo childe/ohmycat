@@ -71,7 +71,7 @@ def init(c, maxred, minred, maxgreen, mingren):
 def evaluate(f, w, lights):
     all_wait_time = f
     for l in lights:
-        l[-1] += f
+        l[-1] = (l[-1]+f) % (sum(l[:2]))
 
     for i in range(len(lights)):
 
