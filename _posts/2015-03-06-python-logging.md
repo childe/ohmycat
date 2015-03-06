@@ -66,7 +66,7 @@ def initlog(level=None):
             }
         },
         'root': {
-            'level': 'DEBUG',
+            'level': level,
             'handlers': ['console']
         },
         "loggers": {
