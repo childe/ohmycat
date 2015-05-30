@@ -2,14 +2,17 @@
 layout: post
 title:  "从Kafka的一个BUG学到的TCP Keepalive"
 date:   2015-05-29 16:00:45 +0800
-abstract:   ""
+abstract:   "前段时间, 发现Kafka的死连接数一直上升, 从Kafka server这边看, 到其中一个    client有几百个established connection, 但从client那边看, 其实只有1个到2>个连接.<br>
+经过测试和搜索之后, 确定了是Kafka的一个BUG, 会在0.8.3版本修复, 目前还没有放出来.<br>
+BUG是Kafka Server没有启用tcp keepalive机制引起.在此记录一下刚刚学习到的TCP keepalive机制.
+"
 categories: linux net
 ---
 
 # Kafka Server Dead Socket 缓慢堆积
 前段时间, 发现Kafka的死连接数一直上升, 从Kafka server这边看, 到其中一个client有几百个established connection, 但从client那边看, 其实只有1个到2个连接.
 
-经过测试和搜索之后, 确定了是Kafka的一个BUG, 会在0.8.3版本修复, 不过目前还没有放出来.
+经过测试和搜索之后, 确定了是Kafka的一个BUG, 会在0.8.3版本修复, 目前还没有放出来.
 
 这是一两个月之前,  有其他用户提出的反馈.
 
