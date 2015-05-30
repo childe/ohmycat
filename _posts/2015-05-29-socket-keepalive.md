@@ -3,7 +3,7 @@ layout: post
 title:  "从Kafka的一个BUG学到的TCP Keepalive"
 date:   2015-05-29 16:00:45 +0800
 abstract:   "前段时间, 发现Kafka的死连接数一直上升, 从Kafka server这边看, 到其中一个    client有几百个established connection, 但从client那边看, 其实只有1个到2>个连接.<br>
-经过测试和搜索之后, 确定了是Kafka的一个BUG, 会在0.8.3版本修复, 目前还没有放出来.<br>
+经过测试和搜索之后, 确定了是Kafka的一个BUG, 会在0.8.3版本修复, 目前还没有放出来.<br><br>
 BUG是Kafka Server没有启用tcp keepalive机制引起.在此记录一下刚刚学习到的TCP keepalive机制.
 "
 categories: linux net
