@@ -66,7 +66,7 @@ categories: elasticsearch
 7. grunt build
 
     其实生成css之后, 把src/kibana放在nginx下面就可以跑了.   
-    build嘛, 就是把一些文件合并压缩一下, 加速用户访问吧. 但Kibana这个项目里面, 实测下来好像没有做什么, 就直接copy了一份到build目录了. 而且还会下载jruby等做服务器. 还是建议大家算了吧.
+    build, 就是把一些文件合并压缩一下, 加速用户访问. 
 
 8. config 配置.
 
