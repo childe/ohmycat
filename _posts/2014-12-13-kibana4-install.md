@@ -70,7 +70,7 @@ categories: elasticsearch
 
 8. config 配置.
 
-    grunt之后, 会在目录下生成一个config文件, 这是一个json文件, 里面是kibana4的一些配置. 里面的kibanaIndex需要改成kibana_index这种格式. 这个生成的原始配置文件应该是nodejs用的, nodejs应该会转成kibana_index这种格式, 但我们现在不用Nodejs做后端服务器了, 所以需要用工改一下.
+    grunt之后, 会在目录下生成一个config文件, 这是一个json文件, 里面是kibana4的一些配置. 里面的kibanaIndex需要改成kibana\_index这种格式. 这个生成的原始配置文件应该是nodejs用的, nodejs应该会转成kibana_index这种格式, 但我们现在不用Nodejs做后端服务器了, 所以需要用人改一下.
 
     ```
     {
