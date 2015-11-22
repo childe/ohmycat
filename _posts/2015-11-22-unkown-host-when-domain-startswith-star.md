@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "ping的时候unkown host"
+title:  "ping的时候unknown host"
 date:   2015-11-22 22:25:39 +0800
-abstract:   "前几天有个前同事出了个题目考我们, 在linux上面ping item.jd.hk, 或者是curl的时候, 报unknown host的错误. 让我们想一下原因是什么. 查了一下午, 发现glibc里面的gethostbyname这个函数, 在解析A记录的时候,如果A记录的host以*打头,就会返回错误"
+abstract:   "前几天有个前同事出了个题目考我们, 在linux上面ping item.jd.hk, 或者是curl的时候, 报unknown host的错误. 让我们想一下原因是什么. \n查了一下午, 发现glibc里面的gethostbyname这个函数, 在解析A记录的时候,如果A记录的host以*打头,就返回错误"
 categories: net
 ---
 
@@ -42,7 +42,7 @@ gethostbyname其实是调用了gethostbyname2,gethostbyname2先是检查输出�
 
     192.168.0.1.53 > 192.168.0.110.37612: 37604 3/0/0 item.jd.hk. CNAME *.jd.hk.gslb.qianxun.com., *.jd.hk.gslb.qianxun.com. A 120.52.148.32, *.jd.hk.gslb.qianxun.com. A 106.39.164.182 (98)
 
-所以querybuf可以不用看, 直接看getanswer. 注意name_ok这个函数, 就会找到答案: 在解析dns请求的返回的时候, 如果当前记录是A记录(不明白当前记录是A记录什么意思的,可以搜索一个dns返回的格式),就会调用name_ok(也就是res_hnok这个函数),如果有错,直接跳出解析的while循环, 然后返回Null. (errno在哪里设置的, 找不到了, 印象中那天还找到了).
+所以querybuf可以不用看, 直接看getanswer. 注意name_ok这个函数, 就会找到答案: 在解析dns请求的返回的时候, 如果当前记录是A记录(不明白当前记录是A记录什么意思的,以及看不懂上面的tcpdump内容的, 可以搜索一下dns返回的格式),就会调用name_ok(也就是res_hnok这个函数),如果有错,直接跳出解析的while循环, 然后返回Null. (errno在哪里设置的, 找不到了, 印象中那天还找到了).
 
 京东把*.jd.hk Cname到了*.jd.hk.gslb.qianxun.com, *.jd.hk.gslb.qianxun.com又A记录到了IP. 这样的话,gethostbyname在解析到A记录的时候会报错.
 
