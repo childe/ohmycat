@@ -2,7 +2,7 @@
 layout: post
 title:  "如何按行或者按列读取文件/数据流/变量"
 date:   2015-12-13 16:48:50 +0800
-abstract:   "翻译自[http://mywiki.wooledge.org/BashFAQ/001](http://mywiki.wooledge.org/BashFAQ/001)"
+abstract:   "翻译自http://mywiki.wooledge.org/BashFAQ/001
 categories: bash linux
 ---
 
