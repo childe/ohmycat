@@ -6,8 +6,6 @@ abstract:   "翻译自[http://mywiki.wooledge.org/BashFAQ/001](http://mywiki.woo
 categories: bash linux
 ---
 
-# 如何按行或者按列读取文件/数据流/变量
-
 翻译自[http://mywiki.wooledge.org/BashFAQ/001](http://mywiki.wooledge.org/BashFAQ/001)
 
 [不要使用for](). 要使用while循环和read来实现.
