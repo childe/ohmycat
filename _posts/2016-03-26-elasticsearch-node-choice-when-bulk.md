@@ -3,10 +3,10 @@ layout: post
 title:  "elasticsearch: transport client bulk的时候如何选择目标node"
 date:   2016-03-26 14:27:35 +0800
 modifydate:   2016-03-26 14:27:35 +0800
-abstract: "<div>我们之前用Losgtash做indexer把数据从kafka消费插入ES, 所有的数据都是先经过Logstash里面配置的四个client节点, 然后经他们再分配到数据节点.</div>
-<div>后来因为logstash效率太低, 改成我们自己用java开发的的hangout做同样的事情, 发现数据不再走client, 而是直接到数据节点. 原因是构造transport client的时候设置成sniff: true.</div>
-<div>但还是有一个困惑, bulk的一批数据, 可能最终会到多个节点上面索引, 那么是client在发送数据的时候就已经计算好应该把哪些数据发往哪个节点, 还是说随便发到nodeX, 然后nodeX再二次分发.</div>
-<br> <br> "
+abstract: "<p>我们之前用Losgtash做indexer把数据从kafka消费插入ES, 所有的数据都是先经过Logstash里面配置的四个client节点, 然后经他们再分配到数据节点.</p>
+<p>后来因为logstash效率太低, 改成我们自己用java开发的的hangout做同样的事情, 发现数据不再走client, 而是直接到数据节点. 原因是构造transport client的时候设置成sniff: true.</p>
+<p>但还是有一个困惑, bulk的一批数据, 可能最终会到多个节点上面索引, 那么是client在发送数据的时候就已经计算好应该把哪些数据发往哪个节点, 还是说随便发到nodeX, 然后nodeX再二次分发.</p>
+"
 categories: elasticsearch
 ---
 
