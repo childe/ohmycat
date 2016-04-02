@@ -6,6 +6,7 @@ abstract:   "
 <p> 消费kafka数据的时候, 总是有几个partition会停住不消费, 有时候过十分钟, 或者2小时, 又开始消费了...</p>
 "
 categories: kafka
+keywords: kafka bug
 ---
 
 用框架的kafka框架(hermes)已经有段时间了, hermes client是他们对kakfa client封装的. 我们主要是从kafka消费数据后放到ES索引.
