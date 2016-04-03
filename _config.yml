@@ -11,3 +11,6 @@ github_username:  childe
 # Build settings
 markdown: kramdown
 extensions: [fenced_code_blocks]
+
+# paging settings
+paginate: 10
