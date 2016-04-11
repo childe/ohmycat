@@ -70,3 +70,22 @@ if ! grep foo somelogfile | head -5; then
     printf "uh oh\n"
 fi
 ```
+
+好, 现在来看一些更复杂的问题: 如果只想要错误输出, 而不想要标准输出. 首先, 你需要决定把标准输出指向哪里去.
+
+```sh
+output=$(command 2>&1 >/dev/null)  # Save stderr, discard stdout.
+output=$(command 2>&1 >/dev/tty)   # Save stderr, send stdout to the terminal.
+output=$(command 3>&2 2>&1 1>&3-)  # Save stderr, send stdout to script's stderr.
+```
+
+最后一个有些难以理解. 首先要了解 `1>&3-` 等价于`1>&3 3>&-`. 然后按下表中的顺序理一下
+
+|Redirection | fd 0 (stdin) | fd 1 (stdout) | fd 2 (stderr) | fd 3 | Description
+|----------- | ------------ | ------------- | ------------- | ---- | -----------|
+initial | /dev/tty | /dev/tty | /dev/tty | | 假设命令是跑在一个终端. stdin stdout stder全部都是初始化为指向终端(tty)
+$(...) | /dev/tty | pipe | /dev/tty | | 标准输出被管道捕获
+3>&2 | /dev/tty | pipe | /dev/tty | /dev/tty | 把描述符2复制到新建的一个描述3, 这时候描述符3指向标准错误输出
+2>&1 | /dev/tty | pipe | pipe | /dev/tty | 描述符2指向1当前的指向, 也就是说2和1一起都是被捕获
+1>&3 | /dev/tty | /dev/tty | pipe | /dev/tty | 复制3到1, 也就是说描述符1指向了标准错误. 到现在为止, 我们已经交换了1和2 
+3>&- | /dev/tty | /dev/tty | pipe | | 最后关闭3, 已经不需要了
