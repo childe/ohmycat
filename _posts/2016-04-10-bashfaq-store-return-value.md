@@ -4,8 +4,11 @@ title:  "如何保存命令的返回值到一个变量中"
 date:   2016-04-10 21:27:21 +0800
 modify:   2016-04-10 21:27:21 +0800
 abstract:   "
-<p>翻译自http://mywiki.wooledge.org/BashFAQ/002</p>
-<p>这个取决于你是想保存命令的输出,还是他的返回码(0到255, 一般来说0代表成功)</p.
+<p>翻译自<a href=http://mywiki.wooledge.org/BashFAQ/002>http://mywiki.wooledge.org/BashFAQ/002</a></p>
+<p>保存stdout, 并保存返回码</p>
+<p>保存stderr, 忽略stdout</p>
+<p>保存stderr, stdout正常输出到原有的地方</p>
+<p>感觉就是各种逻辑游戏, 挺有意思的</p>
 "
 keywords: bash bashfaq linux
 categories: bash linux
@@ -89,3 +92,58 @@ $(...) | /dev/tty | pipe | /dev/tty | | 标准输出被管道捕获
 2>&1 | /dev/tty | pipe | pipe | /dev/tty | 描述符2指向1当前的指向, 也就是说2和1一起都是被捕获
 1>&3 | /dev/tty | /dev/tty | pipe | /dev/tty | 复制3到1, 也就是说描述符1指向了标准错误. 到现在为止, 我们已经交换了1和2 
 3>&- | /dev/tty | /dev/tty | pipe | | 最后关闭3, 已经不需要了
+
+**n>&m- 有时候称之为 将m 重命名为n.**
+
+来个更复杂的! 我们把stder保存下来, stdout还是往之前应该去的地方去, 就好像stdout没有做过任何的重定向.
+
+有两种方式
+
+```sh
+exec 3>&1                    # Save the place that stdout (1) points to.
+output=$(command 2>&1 1>&3)  # Run command.  stderr is captured.
+exec 3>&-                    # Close FD #3.
+
+# Or this alternative, which captures stderr, letting stdout through:
+{ output=$(command 2>&1 1>&3-) ;} 3>&1
+```
+
+**我觉得有必要说明一下带重定向的命令的执行方式. `command 2>&1 1>&3` 是先把2指向1, 然后把1指向3**
+
+第一种方式应该还比较好懂. 先创建FD3,并把1复制到3, 然后执行命令 `$(command 2>&1 1>&3)` , 把FD1的输出管道给output, 然后把3关闭.
+
+第二种方式, 其实就是把三行合成为1行了.
+
+
+如果想分别保存stdout, stderr到2个变量中, 只用FD是做不到的. 需要用到一个临时文件, 或者是命名的管道.
+
+一个很糟糕的实现如下:
+
+```sh
+result=$(
+    { stdout=$(cmd) ; } 2>&1
+        printf "this line is the separator\n"
+            printf "%s\n" "$stdout"
+            )
+var_out=${result#*this line is the separator$'\n'}
+var_err=${result%$'\n'this line is the separator*}
+```
+
+如果还想保存返回码的话
+
+```sh
+cmd() { curl -s -v http://www.google.fr; }
+
+result=$(
+    { stdout=$(cmd); returncode=$?; } 2>&1
+        printf "this is the separator"
+            printf "%s\n" "$stdout"
+                exit "$returncode"
+                )
+returncode=$?
+
+var_out=${result#*this is the separator}
+var_err=${result%this is the separator*}
+```
+
+Done.
