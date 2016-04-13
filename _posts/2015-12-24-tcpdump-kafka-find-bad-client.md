@@ -2,8 +2,14 @@
 layout: post
 title:  "利用tcpdump和kafka协议定位不合法topic的来源client"
 date:   2015-12-24 00:30:12 +0800
-abstract:   ""
-categories: net
+abstract:   "
+<p>事情是这样滴, 我们在很多linux机器上部署了logstash采集日志, topic_id用的是 test-%{type}, 但非常不幸的是, 有些机器的某些日志, 没有带上type字段.</p>
+<p>因为在topic名字里面不能含有%字符, 所以kafka server的日志里面大量报错. Logstash每发一次数据, kafka就会生成下面一大段错误, 严重影响日志的正常使用. </p>
+<p>更不幸的是, 错误日志里面并没有客户来源的信息, 根本不知道是哪些机器还有问题.</p>
+<p>我想做的, 就是把有问题的client机器找出来.</p>
+"
+keywords: tcpdump kafka protocol
+categories: net kafka
 ---
 
 # 事情缘由
