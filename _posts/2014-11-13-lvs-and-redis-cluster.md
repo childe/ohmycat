@@ -67,6 +67,7 @@ CentOS release 5.8 (Final)
 
 ### 安装ipvsadm.  
 yum就可以安装. 这个其实有没有都行, 是管理lvs用的. 还没有仔细看用法 , 以后会看看
+
 ### 安装keepalived. 
 现在最新版本是1.2.13, 但源码下下来, 一直少个依赖, 没搞定, 拉倒. 换1.2.8. keepalived有个坑爹的地方, 就是如果配置文件有错,或者干脆就没有配置文件,启动的时候也不会报错. 默认配置文件使用/etc/keepalived/keepalived.conf, 如果安装在其他地方,请考过来.
 
