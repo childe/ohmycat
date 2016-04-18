@@ -116,7 +116,7 @@ virtual_server 192.168.81.229 6379 {  #设置VIP port
         } 
     } 
  } 
- ```
+```
 
 分两部分, 上半部分是建一个vrrp实例(什么是vrrp?). 如果不要下面的虚拟主机配置,就是HA, redis client会连到当前VIP所在的节点. keepalived挂了之后, backup会变成master,VIP换到新的master上面. 但这样不能做Load balance.
 
