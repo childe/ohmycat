@@ -192,7 +192,7 @@ echo "1" >/proc/sys/net/ipv4/conf/all/arp_ignore
 echo "2" >/proc/sys/net/ipv4/conf/all/arp_announce  
 ```
 
-关于这个配置及其含义:
+关于这个配置及其如下, 具体的解释可以参考[arp_ignore arp_announce解释](linux/2016/04/19/lvs-arp-response.html)
 
 > arp_announce - INTEGER
 
