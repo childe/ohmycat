@@ -35,14 +35,14 @@ categories: linux
 *表格1: 不同buffer size下的cpu使用情况*
 
 
-# readhead, 暂时先不管它, 后面再说
+## readhead, 暂时先不管它, 后面再说
 
 系统读取磁盘数据时, 会认为磁盘中接下来的连续数据也会很快被用到, 所以会预读取更多的数据, 这个叫做readahead.
 
 我们先不考虑readhead, 后面再说. 为了消除readahead影响, 先把readahead设置为0. `blockdev --setra 0 /dev/sda
 `
 
-# block size
+## block size
 
 `blockdev --getbsz /dev/sda` 可以获取磁盘的block size大小.
 
@@ -51,13 +51,13 @@ Linux系统读取文件时(不考虑readahead), 一次会从磁盘中读取block
 在我这个测试用的电脑上, block size是4096(bytes).  
 所以如果每次read(1)和每次read(4096), 虽然前者调用read的次数多了非常多倍, 但实际上磁盘IO次数是一样的. 因为循环次数特别多, 所以user cpu和sys cpu会多很多. 但用时钟时间减去前两者,实际使用的IO时间是差不多的.
 
-# read(>4096)
+## read(>4096)
 
 如果调用read函数时, buffer size大于block size呢, 会不会进一步减少磁盘IO次数?  
 如果block size是4096, 我一个read(8192)调用, 会不会一次IO操作读取8192字节呢?  
 答案是不会的, 因为即使是一个文件, 存在磁盘的时候, 在物理结构上未必就是顺序存放的. 所以系统还是要一个个block size去读取, 然后再判断接下来应该读取哪一块block, 否则按照read的参数一次性读取很多, 很有可能是浪费的.
 
-# readahead
+## readahead
 
 前面说到, 系统读取磁盘数据时, 会认为磁盘中接下来的连续数据也会很快被用到, 所以会预读取更多的数据, 这个叫做readahead.
 
@@ -73,7 +73,7 @@ sys     0m36.257s
 ```
 
 
-# 测试方法
+## 测试方法
 
 1. 用dd创建一个100M大小的文件
 2. 每次操作前, 先`echo 3 > /proc/sys/vm/drop_caches`清一下, 这个不保证马上清掉, 最好sleep一下
