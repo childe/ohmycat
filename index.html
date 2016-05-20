@@ -10,9 +10,9 @@ layout: default
         <div class="wall">
             <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
 
-            <h2>
+            <h1>
                 <a class="post-link" href="{{ post.url | prepend: site.baseurl }}">{{ post.title }}</a>
-            </h2>
+            </h1>
             <div> {% if post.abstract %}{{ post.abstract }}{% else %}{{ post.excerpt }}{% endif %}</div>
         </div>
         {% endfor %}
