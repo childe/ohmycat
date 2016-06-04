@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "bash中将标准输出多次重定向到多处"
+title:  "bash中将标准输出重定向到多处"
 date:   2016-06-01 18:24:16 +0800
 categories: os linux
 ---
