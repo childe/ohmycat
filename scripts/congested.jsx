@@ -138,8 +138,8 @@ define(function(require){
             maxspeed:30,
             smallthreshold: 0.4, //space*smallthreshold > carlength
             bigthreshold: 5,
-            blockwidth: 500,
-            blockheight: 500,
+            blockwidth: 200,
+            blockheight: 200,
             acceleration: 0.2,
             interval: 0.05,
 
