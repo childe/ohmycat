@@ -54,7 +54,11 @@ int main(int args, char** argv)
 
 **查看一下结果, 其实是zsh帮忙用pipe做了中间介质, 才把a.out的输出写到了多个文件.**
 
->   % lsof f1 f2 f3 f4 f5
+23226进程是我们的刚刚的C程序, 可以看到它并没有直接写到f1 f2 f3 f4 f5, 而是写到了两个pipe文件中.
+
+而zsh读这2个pipe, 然后再分别写到f1 f2 f3 f4 f5
+
+>   % lsof f1 f2 f3 f4 f5  
     COMMAND   PID   USER   FD   TYPE DEVICE SIZE/OFF   NODE NAME  
     zsh     23227 childe   11w   REG    8,1        8 412766 f1  
     zsh     23227 childe   13w   REG    8,1        8 412767 f2  
@@ -62,18 +66,18 @@ int main(int args, char** argv)
     zsh     23228 childe   16w   REG    8,1        8 412774 f4  
     zsh     23228 childe   17w   REG    8,1        8 412775 f5  
 
->   % ll /proc/23226/fd
+>   % ll /proc/23226/fd  
     lrwx------ 1 childe childe 64  6月  1 18:37 0 -> /dev/pts/10  
     l-wx------ 1 childe childe 64  6月  1 18:37 1 -> pipe:[95495]  
     l-wx------ 1 childe childe 64  6月  1 18:37 2 -> pipe:[95496]  
 
->   % ll /proc/23227/fd
+>   % ll /proc/23227/fd  
     l-wx------ 1 childe childe 64  6月  1 18:37 11 -> /tmp/m/f1  
     l-wx------ 1 childe childe 64  6月  1 18:37 13 -> /tmp/m/f2  
     lr-x------ 1 childe childe 64  6月  1 18:37 14 -> pipe:[95495]  
     l-wx------ 1 childe childe 64  6月  1 18:37 15 -> /tmp/m/f3
 
->   % ll /proc/23228/fd
+>   % ll /proc/23228/fd  
     l-wx------ 1 childe childe 64  6月  1 18:37 16 -> /tmp/m/f4  
     l-wx------ 1 childe childe 64  6月  1 18:37 17 -> /tmp/m/f5  
-    lr-x------ 1 childe childe 64  6月  1 18:37 18 -> pipe:[95496]      
+    lr-x------ 1 childe childe 64  6月  1 18:37 18 -> pipe:[95496]  
