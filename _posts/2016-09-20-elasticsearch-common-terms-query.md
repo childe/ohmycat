@@ -53,21 +53,19 @@ cutoff_frequency 是单个shard级别计算的.
 
 1. 新建一个索引
 
-    ```
-    POST test/
-    {
-       "mappings": {
-          "logs": {
-             "properties": {
-                "msg": {
-                   "type": "string",
-                   "index": "not_analyzed"
-                }
-             }
-          }
-       }
-    }
-    ```
+        POST test/
+        {
+           "mappings": {
+              "logs": {
+                 "properties": {
+                    "msg": {
+                       "type": "string",
+                       "index": "not_analyzed"
+                    }
+                 }
+              }
+           }
+        }
 
 2. 插入数据
 
@@ -75,143 +73,135 @@ cutoff_frequency 是单个shard级别计算的.
     就是说, 这四个stopword每个都有大约2500条.
 
 
-    ```
-    import string
-    alphabet = string.ascii_lowercase
-    common_terms = ['to', 'be', 'or', 'not']
+        import string
+        alphabet = string.ascii_lowercase
+        common_terms = ['to', 'be', 'or', 'not']
 
 
-    def gen_word():
-        word = [random.choice(alphabet) for i in range(random.randint(1, 10))]
-        return ''.join(word)
+        def gen_word():
+            word = [random.choice(alphabet) for i in range(random.randint(1, 10))]
+            return ''.join(word)
 
 
-    def gen_sentence():
-        words = [gen_word() for i in range(random.randint(1, 10))]
-        words.append(random.choice(common_terms))
-        random.shuffle(words)
-        return ' '.join(words)
+        def gen_sentence():
+            words = [gen_word() for i in range(random.randint(1, 10))]
+            words.append(random.choice(common_terms))
+            random.shuffle(words)
+            return ' '.join(words)
 
 
-    def bulk(eshost, auth, index, size):
-        if auth:
-            auth = tuple(auth.split(':'))
-        else:
-            auth = None
+        def bulk(eshost, auth, index, size):
+            if auth:
+                auth = tuple(auth.split(':'))
+            else:
+                auth = None
 
-        actions = []
-        for i in range(size):
-            actions.append({'index': {}})
-            actions.append({'msg': gen_sentence()})
+            actions = []
+            for i in range(size):
+                actions.append({'index': {}})
+                actions.append({'msg': gen_sentence()})
 
-        url = '{}/{}/logs/_bulk'.format(eshost, index)
-        logging.debug(url)
-        actions = [json.dumps(a) for a in actions]
-        r = requests.post(url, data='\n'.join(actions)+'\n', auth=auth)
-        logging.debug(r.text)
-        if r.ok:
-            logging.info('bulk done')
-        else:
-            logging.error('failed to bulk')
-
-
-    def main():
-        global logger
-        parser = argparse.ArgumentParser()
-        parser.add_argument("-l", default="-", help="log file")
-        parser.add_argument("--level", default="info")
-        parser.add_argument("--eshost")
-        parser.add_argument("--auth")
-        parser.add_argument("--index")
-        parser.add_argument("--count", type=int, default=10000)
-        args = parser.parse_args()
-
-        initlog(level=args.level, log=args.l)
-
-        for i in range(args.count/100):
-            logging.info('bulk %d/%d' % (1+i, args.count/100))
-            bulk(args.eshost, args.auth, args.index, 100)
+            url = '{}/{}/logs/_bulk'.format(eshost, index)
+            logging.debug(url)
+            actions = [json.dumps(a) for a in actions]
+            r = requests.post(url, data='\n'.join(actions)+'\n', auth=auth)
+            logging.debug(r.text)
+            if r.ok:
+                logging.info('bulk done')
+            else:
+                logging.error('failed to bulk')
 
 
-    if __name__ == '__main__':
-        main()
-    ``
+        def main():
+            global logger
+            parser = argparse.ArgumentParser()
+            parser.add_argument("-l", default="-", help="log file")
+            parser.add_argument("--level", default="info")
+            parser.add_argument("--eshost")
+            parser.add_argument("--auth")
+            parser.add_argument("--index")
+            parser.add_argument("--count", type=int, default=10000)
+            args = parser.parse_args()
+
+            initlog(level=args.level, log=args.l)
+
+            for i in range(args.count/100):
+                logging.info('bulk %d/%d' % (1+i, args.count/100))
+                bulk(args.eshost, args.auth, args.index, 100)
+
+
+        if __name__ == '__main__':
+            main()
 
 3. 随便搜索2条
 
     从结果里面, 我们取xszgdnv hwonfhy做后续的测试
 
-    ```
-    POST test/_search?size=2
-    
-    返回:
-    {
-       "took": 15,
-       "timed_out": false,
-       "_shards": {
-          "total": 2,
-          "successful": 2,
-          "failed": 0
-       },
-       "hits": {
-          "total": 10000,
-          "max_score": 1,
-          "hits": [
-             {
-                "_index": "test",
-                "_type": "logs",
-                "_id": "AVdFuXVBSdUE2kgUlwQp",
-                "_score": 1,
-                "_source": {
-                   "msg": "xszgdnv be"
-                }
-             },
-             {
-                "_index": "test",
-                "_type": "logs",
-                "_id": "AVdFuXVBSdUE2kgUlwQr",
-                "_score": 1,
-                "_source": {
-                   "msg": "zwcghjwiws hwonfhy sglhqkv vqmckx daowpd to goztgsn xxpzfuzqgg ite"
-                }
-             }
-          ]
-       }
-    }
-    ```
+        POST test/_search?size=2
+        
+        返回:
+        {
+           "took": 15,
+           "timed_out": false,
+           "_shards": {
+              "total": 2,
+              "successful": 2,
+              "failed": 0
+           },
+           "hits": {
+              "total": 10000,
+              "max_score": 1,
+              "hits": [
+                 {
+                    "_index": "test",
+                    "_type": "logs",
+                    "_id": "AVdFuXVBSdUE2kgUlwQp",
+                    "_score": 1,
+                    "_source": {
+                       "msg": "xszgdnv be"
+                    }
+                 },
+                 {
+                    "_index": "test",
+                    "_type": "logs",
+                    "_id": "AVdFuXVBSdUE2kgUlwQr",
+                    "_score": 1,
+                    "_source": {
+                       "msg": "zwcghjwiws hwonfhy sglhqkv vqmckx daowpd to goztgsn xxpzfuzqgg ite"
+                    }
+                 }
+              ]
+           }
+        }
 
 4. 正常的match
 
-    ```
-    POST test/_search
-    {
-       "query": {
-          "match": {
-             "msg": {
-                "query": "xszgdnv hwonfhy to be"
-             }
-          }
-       }
-    }
-    ```
+        POST test/_search
+        {
+           "query": {
+              "match": {
+                 "msg": {
+                    "query": "xszgdnv hwonfhy to be"
+                 }
+              }
+           }
+        }
 
     返回了4971条数据, 接近5000条, 是因为约5000条数据含有to或者be
 
 5. 设置cutoff_frequency
 
-    ```
-    POST test/_search
-    {
-       "query": {
-          "match": {
-             "msg": {
-                "query": "xszgdnv hwonfhy to be",
-                "cutoff_frequency": 0.1
-             }
-          }
-       }
-    }
-    ```
+        POST test/_search
+        {
+           "query": {
+              "match": {
+                 "msg": {
+                    "query": "xszgdnv hwonfhy to be",
+                    "cutoff_frequency": 0.1
+                 }
+              }
+           }
+        }
 
     只返回了两条数据, 就是前面那两条.  
     因为to be出现的频率比较超过了0.1(10%), 所以被当成了stopword, 他们只是对过滤出来的两条文档再做进一步打分.
@@ -222,38 +212,35 @@ cutoff_frequency 是单个shard级别计算的.
 
     这个参数默认是 or, 改成and看一下
 
-    ```
-    POST test/_search
-    {
-       "query": {
-          "common": {
-             "msg": {
-                "query": "xszgdnv hwonfhy to be",
-                "cutoff_frequency": 0.1,
-                "low_freq_operator": "and"
-             }
-          }
-       }
-    }
-    ```
+        POST test/_search
+        {
+           "query": {
+              "common": {
+                 "msg": {
+                    "query": "xszgdnv hwonfhy to be",
+                    "cutoff_frequency": 0.1,
+                    "low_freq_operator": "and"
+                 }
+              }
+           }
+        }
+
     不返回任何结果.
 
 6. 所有term都是stopword
 
     前面说到, 所有term都是stopword时, operator自动变成and.
 
-    ```
-    POST test/_search
-    {
-       "query": {
-          "common": {
-             "msg": {
-                "query": "to be",
-                "cutoff_frequency": 0.1
-             }
-          }
-       }
-    }
-    ```
+        POST test/_search
+        {
+           "query": {
+              "common": {
+                 "msg": {
+                    "query": "to be",
+                    "cutoff_frequency": 0.1
+                 }
+              }
+           }
+        }
 
     返回三条结果
