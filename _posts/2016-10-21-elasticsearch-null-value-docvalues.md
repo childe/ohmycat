@@ -1,6 +1,6 @@
 ---
 
-title: "size of sparce property in elasticsearch docvalues"
+title: "稀疏字段对索引大小和内存占用的影响"
 date: 2016-10-21 16:23:50 +0800
 layout: "post"
 
