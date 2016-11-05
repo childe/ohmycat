@@ -11,6 +11,8 @@ categories: net
 
 这篇文章总结一下各状态变迁对应的编程语言中对应哪一个方法调用.
 
+<!--more-->
+
 ## LISTEN
 
 普通的TCP编程模型中, Server都会在创建socket之后, 调用listen方法.
