@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
 # 借鉴官方的Pool, 尝试自己实现一下最简单的Multiprocessing Pool
 
-```py
+{% highlight python linenos%}
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -133,6 +133,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-```
+{% endhighlight %}
 
 **最后再提一下, 我的初衷只是想等所有线程结束后再退出. 默认就是这样的, join什么的都不用.**
