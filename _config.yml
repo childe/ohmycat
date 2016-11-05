@@ -8,6 +8,8 @@ url: "http://ohmycat.me" # the base hostname & protocol for your site
 # twitter_username: jekyllrb
 github_username:  childe
 
+excerpt_separator: <!--more-->
+
 # Build settings
 markdown: kramdown
 extensions: [fenced_code_blocks]
