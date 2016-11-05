@@ -39,6 +39,8 @@ categories: elasticsearch
 这样的话, 虽然每个term都匹配好多文档, 但AND之后,结果集就会小很多.  
 也可以用 minimum_should_match 这个参数控制用 OR query, 最好使用一个大点的值~
 
+<!--more-->
+
 ### 怎么样才算高频词呢?
 
 cutoff_frequency 来控制, 哪些是高频词, 哪些是低频词.
