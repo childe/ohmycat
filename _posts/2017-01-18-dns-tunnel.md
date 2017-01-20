@@ -11,11 +11,7 @@ categories: net
 
 host www.baidu.com 发现是可以正常返回的. 但当时手头没有现成的DNS隧道工具, 萌发了自己写一个的想法.
 
-<<<<<<< HEAD
 原理应该算是比较简单的, 但是在实现的过程中遇到了一些麻烦, 现在还未完成...
-=======
-原理应该算是比较简单的, 但是在实现的过程中遇到了一些麻烦, 现在还未完成... 
->>>>>>> d956962... new file:   _posts/2017-01-18-dns-tunnel.md
 
 先把这些困难记录一下, 也练练把事情说清楚的能力.
 
@@ -43,7 +39,6 @@ host www.baidu.com 发现是可以正常返回的. 但当时手头没有现成�
 
 ### 思路1
 
-<<<<<<< HEAD
 golang已经有web框架了 [https://golang.org/doc/articles/wiki/](https://golang.org/doc/articles/wiki/)  proxy-client直接拿来用, 拿到http package封装好的request, 就可以拿到header与request body, 就能还原出来原始的http请求(或者说是原始的TCP包内容), 然后包装到DNS请求发出去.
 
 proxy-server收到DNS请求(包含Http请求数据)后, 组装成完成的请求, 以tcp的方式发送给Http server, 拿到数据后再返回给proxy-client.
@@ -69,23 +64,6 @@ proxy-client因为是用的现成的web框架, 收到proxy-server的真实的htt
 前面几种思路其实会慢一些, 因为proxy-client到proxy-server以及反过来, 都需要等完整的请求或者是响应收到之后, 才能交给下游.
 
 思路3采用流的方式. proxy-client就是开一个tcp listener, 收到之后直接转给proxy-server, server也同样转发, 大家都不等拿到完整的request/respone.
-=======
-golang已经有web框架了 [https://golang.org/doc/articles/wiki/](https://golang.org/doc/articles/wiki/)  直接拿来用, 拿到http包封装好的request, 可以拿到header与request body, 就能还原出来原始的http请求(或者说是原始的TCP包内容), 然后包装到DNS请求发出去.
-
-proxy-server收到DNS请求(包含Http请求数据)后, 组装成完成的请求, 发送给Http server, 拿到数据后再返回给proxy-client.
-
-proxy-client是用的现成的web框架, 收到proxy-server的真实的http response之后, 解析出来Header和response body, 然后设置Header并写body给浏览器.
-
-困难在于: 如果是chunked, 那proxy-client再写给用户的时候, 编码的后的chunked的内容就错了. 如果你不知道chunked如何编码的, 可以先了解一下.
-
-解决方案就是不管是不是chunked, 都修改成不是. 尚未验证, 心虚..
-
-### 思路2
-
-思路1其实会慢一些, 因为proxy-client到proxy-server以及反过来, 都需要等完整的请求或者是响应收到之后, 才能交给下游.
-
-思路2采用流的方式. proxy-client就是开一个tcp listener, 收到之后直接转给proxy-server, server也同样转发, 大家都不等拿到完整的request/respone.
->>>>>>> d956962... new file:   _posts/2017-01-18-dns-tunnel.md
 
 困难在于: 呃, 我之前以为有一个困难, 但是前两天看golang的http库代码, 发现了如下注释, 感觉没困难了.
 
