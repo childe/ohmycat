@@ -50,18 +50,22 @@ proxy-client因为是用的现成的web框架, 收到proxy-server的真实的htt
 解决方案就是不管是不是chunked, 都修改成不是. 尚未验证, 心虚.. 待续.
 
 刚刚拿代码试了一下, 果然还是不行. 主要是因为keep-alive的时候, real http server返回给proxy-server的时候, 是不会close链接的, 那proxy-server与realserver只是tcp层面的交互, 它不知道什么时候才算结束.
-另外, 在content-encoding: zip 时可能也会有问题.
-还有就是HTTPS的时候, 握手可能会有问题.
+另外, 在content-encoding: zip 时可能也会有问题?
+
 
 ### 思路2
 
 路1有点难走, 那在它的基础上换一下思路看. proxy-server拿到proxy-client过来的请求后, 解析出来header与body, 然后用http client库发起http请求, 这样http client库可以帮我判断是不是拿到了完整的respone.
 
-但我还是对http协议不太了解, header里面太多规则了 ,像上面说的content-encoding可能算是一个, 需要replace, 也不确定是不是还有其它的. 最关键的还是, https如何处理? 让我想一想, 待续.
+但我还是对http协议不太了解, header里面太多规则了 ,像上面说的content-encoding可能算是一个, 需要replace, 也不确定是不是还有其它的. https如何处理? 让我想一想, 待续.
+
+好像https也没有更特殊之处, 去写代码尝试一下. 待续.
+
+按思路2 实现了一下, 还没有替换特定的header. 在chrome里面试了一下, 对HTTP网站已经可以用了, 效果还不错~~ 但是HTTPS完全不能用. 怪自己之前对https_proxy不了解. 还要得再按下面的思路3再实现一个新版本.
 
 ### 思路3
 
-前面几种思路其实会慢一些, 因为proxy-client到proxy-server以及反过来, 都需要等完整的请求或者是响应收到之后, 才能交给下游.
+前面几种思路其实会慢一些(这一句是之前写的, 现在已经不只是慢的问题了), 因为proxy-client到proxy-server以及反过来, 都需要等完整的请求或者是响应收到之后, 才能交给下游.
 
 思路3采用流的方式. proxy-client就是开一个tcp listener, 收到之后直接转给proxy-server, server也同样转发, 大家都不等拿到完整的request/respone.
 
