@@ -80,3 +80,7 @@ proxy-client因为是用的现成的web框架, 收到proxy-server的真实的htt
 	// the same. In the second case, any Host line is ignored.
 
 待续, 我先去把代码再改改..
+
+代码在[https://github.com/childe/dns-tunnel](https://github.com/childe/dns-tunnel), HTTPS还是不行. 对于https__proxy以及HTTPS的原理不太懂. 暂时就这样吧.
+
+
