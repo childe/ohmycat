@@ -63,7 +63,7 @@ location / {
 
 1. 因为是base64编码的, 并非hash, 所以密码相当于明文的, 一般是配合https一起使用
 2. 浏览器一般需要对认证的header提供一个过期机制
-3. 服务器并不能提供登出功能. 下面这句没理解... However, there are a number of methods to clear cached credentials in certain web browsers. One of them is redirecting the user to a URL on the same domain containing credentials that are intentionally incorrect.
+3. 服务器并不能提供登出功能,只能通过下面这种方法清掉缓存. However, there are a number of methods to clear cached credentials in certain web browsers. One of them is redirecting the user to a URL on the same domain containing credentials that are intentionally incorrect.
 
 ## 请求被转发路径
 
