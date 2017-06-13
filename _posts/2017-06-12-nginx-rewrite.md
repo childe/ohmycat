@@ -6,7 +6,7 @@ date:   2017-06-12 21:15:20 +0800
 
 ---
 
-翻一下[http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#return](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html#return)并加一些例子
+翻一下[http://nginx.org/en/docs/http/ngx_http_rewrite_module.html](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html)并加一些例子
 
 <!--more-->
 
