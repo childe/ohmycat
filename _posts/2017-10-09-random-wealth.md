@@ -14,12 +14,14 @@ date:   2017-10-09 16:00:19 +0800
 <!--more-->
 
 <div id="container" style="min-width:310px; height:400px; margin-bottom:15px;"> </div>
+<div id="containerSort" style="min-width:310px; height:400px; margin:15px;"> </div>
 
-
-<div id="containerSort" style="min-width:310px; height:400px; margin:0 auto;"> </div>
+<p>模拟每小时输出一次财富最小和最多的人</p>
+<div id="datatable" style="min-width:310px;"> </div>
 
 
 <script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://unpkg.com/jquery@3.2.1/dist/jquery.min.js"></script>
 
 <script>
 
@@ -29,6 +31,24 @@ var data = [];
 for(var i=1; i<=numbersOfPeople; i++){
   data.push({y:100,name:'x'+i});
 }
+
+setInterval(function() {
+  var min=100, max=100
+  var minperson='x1', maxperson='x1'
+  for(var i in data){
+    if (data[i]['y'] < min){
+      min = data[i]['y']
+      minperson = data[i]['name']
+    }
+    if (data[i]['y'] > max) {
+      max = data[i]['y']
+      maxperson = data[i]['name']
+    }
+  }
+  var div = $('<div></div>').text(minperson+':'+min+';'+maxperson+':'+max)
+  $('#datatable').append(div)
+}, 6000)
+
 var options = {
     title: {text:'未排序'},
     legend:{enabled:false},
