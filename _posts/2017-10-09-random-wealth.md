@@ -35,7 +35,9 @@ for(var i=1; i<=numbersOfPeople; i++){
 setInterval(function() {
   var min=100, max=100
   var minperson='x1', maxperson='x1'
+  var s = []
   for(var i in data){
+    s.push(data[i]['name'] + ':' + data[i]['y'])
     if (data[i]['y'] < min){
       min = data[i]['y']
       minperson = data[i]['name']
@@ -45,8 +47,9 @@ setInterval(function() {
       maxperson = data[i]['name']
     }
   }
-  var div = $('<div></div>').text(minperson+':'+min+';'+maxperson+':'+max)
-  $('#datatable').append(div)
+  var divDetail = $('<div></div>').text(s.join(', ')).hide()
+  var divMM = $('<div></div>').text(minperson+':'+min+';'+maxperson+':'+max).click(function(){divDetail.toggle()})
+  $('#datatable').append(divMM).append(divDetail)
 }, 6000)
 
 var options = {
