@@ -135,7 +135,7 @@ nginx在匹配路径之前, 会首先把uri中%XX这样格式的内容先解码,
         curl -i proxy-pass-test-3.localhost:8080/name/childe
         127.0.0.1 - - [12/Jun/2017 14:36:29] "GET /users?name=childe HTTP/1.0" 404 -
 
-        curl -i proxy-pass-test-3.localhost:8080/name/childe
+        curl -i proxy-pass-test-4.localhost:8080/name/childe
         127.0.0.1 - - [12/Jun/2017 14:36:35] "GET /users?name=childe HTTP/1.0" 404 -
 
 - proxy_pass中使用变量
