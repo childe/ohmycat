@@ -114,7 +114,7 @@ func main() {
 1. 传递 []byte 类型的时候, 传递的是指针, 而不是[]byte的copy.  (string是传value, 对原string的copy)
 2. `reader := bufio.NewReader(os.Stdin)` , 这里生成的reader对象, 里面自己维护一个[]byte, 读到的数据会放在[]byte里面. 第二次读到的数据把第一次的覆盖了. `producer.AddMessage` 其实每次都传递了同一个[]byte指针过去. 在读入第二行数据的时候, 第一行的内容已经永远的消失了. 在最后打印的时候, 打印出来的全是同一个指针下的内容, 也就是'5'
 
-为什么 `cat a | go run a.go` 可以"正确"输出, 是因为管道的时候, 数据是五行一次batch到下游的, 就是说, reader一次性读到了五行数据, 所以没有体现出来数据被覆盖. 一个类似的问题参见 [https://stackoverflow.com/questions/5427483/why-no-output-is-shown-when-using-grep-twice] (https://stackoverflow.com/questions/5427483/why-no-output-is-shown-when-using-grep-twice)
+为什么 `cat a | go run a.go` 可以"正确"输出, 是因为管道的时候, 数据是五行一次batch到下游的, 就是说, reader一次性读到了五行数据, 所以没有体现出来数据被覆盖. 一个类似的问题参见 [https://stackoverflow.com/questions/5427483/why-no-output-is-shown-when-using-grep-twice](https://stackoverflow.com/questions/5427483/why-no-output-is-shown-when-using-grep-twice)
 
 
 今天的节目就到这里了, 大家晚安.
