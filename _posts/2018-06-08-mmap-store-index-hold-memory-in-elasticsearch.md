@@ -41,7 +41,7 @@ ES版本升级到5之后,发现这些节点的Load很升到非常高,以至于�
 18029 mmap(NULL, 379, PROT_READ, MAP_SHARED, 240, 0) = 0x7fba800ef000
 ```
 
-具体的实现参见[https://github.com/openjdk-mirror/jdk7u-jdk/blob/master/src/solaris/native/sun/nio/ch/FileChannelImpl.c#L83](https://github.com/openjdk-mirror/jdk7u-jdk/blob/master/src/solaris/native/sun/nio/ch/FileChannelImpl.c#L83)
+具体的实现参见[https://github.com/openjdk-mirror/jdk7u-jdk/blob/f4d8095/src/solaris/native/sun/nio/ch/FileChannelImpl.c#L83](https://github.com/openjdk-mirror/jdk7u-jdk/blob/f4d8095/src/solaris/native/sun/nio/ch/FileChannelImpl.c#L83)
 
 ## 结论 (也许是结论吧?)
 
