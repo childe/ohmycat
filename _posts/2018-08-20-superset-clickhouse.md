@@ -18,7 +18,7 @@ title: 部署superset+clickhouse
 
 其实部署过程已经说的很清楚了, 但我有些想当然, 没有完全照做, 踩了第一个坑.
 
-简单起见, 我选择sqlite做配置(应该是包括数据源,chart,dashboard等配置)的存储, 默认也是sqlite. sqlite的数据文件在 `/var/lib/superset` . **注意这里最好是挂载到本地, 原因下面马上提到. **
+简单起见, 我选择sqlite做配置(应该是包括数据源,chart,dashboard等配置)的存储, 默认也是sqlite. sqlite的数据文件在 `/var/lib/superset` . **注意这里最好是挂载到本地, 原因下面马上提到.**
 
 docker跑起来之后, 需要做一个数据库的初始化.
 
