@@ -29,7 +29,7 @@ docker exec -it superset superset-init
 
 **注意, 初始化之后, docker容器需要重启才能生效!**
 
-但是呢, 如果不把 /var/lib/superset 挂载到本地, 重启后可能会数据丢失. (如果不是restart container)
+**但是呢, 如果不把 /var/lib/superset 挂载到本地, 重启后可能会数据丢失. (如果不是restart container)**
 
 我是把sqlite的数据文件考出来, 用他做了一个新的 image . 实际生产环境可能使用远端的 mysql 等数据库, 所以不用担心上面这种数据丢失的问题.
 
