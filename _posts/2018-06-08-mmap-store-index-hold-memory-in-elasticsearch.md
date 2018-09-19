@@ -46,3 +46,16 @@ ES版本升级到5之后,发现这些节点的Load很升到非常高,以至于�
 ## 结论 (也许是结论吧?)
 
 cache清不掉, 导致最终swap, load飙升. 嗯, 就这样吧.
+
+## 后续
+
+呀, 居然来写了后续, 因为前面有错误, 大大的错误.
+
+结论中说 `cache清不掉, 导致最终swap` , 大错特错了. 
+
+我在后面一篇BLOG里面也提到了 [mmap中shared方式锁定的内存能否释放](http://ohmycat.me/2018/08/03/shared-memory-mmap.html), mmap中shared方式锁定的内存能释放. 那么问题来了, mmap为啥会导致page in/out 特别多, 然后load升高呢.
+
+最终的原因应该在这里. [mmap中的read ahead](http://gitcommit.today/2018/08/15/read-ahead-in-mmap.html)
+
+通过mmap方式打开的文件, read的时候会有个readahead (不同于系统的readahead), 即使把系统的readahead禁用也还是会多读一些数据. 这个原因导致mmap方式的索引在内存不足的情况下会有更多的page in/out.
+
