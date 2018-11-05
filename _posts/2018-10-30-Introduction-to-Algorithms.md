@@ -133,3 +133,39 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+# 4.1.4
+
+如果最终的结果maximum_subarry_sum是小于0的, 那么就返回一个空数组
+
+# 4.1.5
+
+个人感觉, 完全按题干中的"如下思想"来写, 时间复杂度并不是O(n), 而是O(n\*2). 因为第一层需要遍历1..n, 当遍历到j的时候, 第二层最坏情况下, 需要遍历i..j. 
+
+动态规划的话,还需要一个额外的数组, 叫它 maximum_subarry_endswith_j, 记录的是A[:j]里面以A[j]结尾的最大子数组. 能避免第二层的O(n)的复杂度. 代码如下:
+
+
+```
+def find_maximum_subarray_2(A, low, high):
+    """
+    动态规划
+    """
+
+    maximum_subarry = (-1, -1, None)
+    maximum_subarry_endswith_j = []
+
+    maximum_subarry = (low, low, A[low])
+    maximum_subarry_endswith_j.append((low, A[low]))
+
+    for j in range(low+1, high+1):
+        _start, _max_sum = maximum_subarry_endswith_j[-1]
+        if _max_sum < 0:
+            maximum_subarry_endswith_j.append((j, A[j]))
+        else:
+            maximum_subarry_endswith_j.append((_start, _max_sum + A[j]))
+
+        if maximum_subarry_endswith_j[-1][1] > maximum_subarry[-1]:
+            maximum_subarry = (maximum_subarry_endswith_j[-1][0], j, maximum_subarry_endswith_j[-1][1])
+
+    return maximum_subarry
+```
