@@ -172,6 +172,7 @@ def find_maximum_subarray_2(A, low, high):
 
 数组长度100, 跑1000个100长度的随机的数组, 时间如下:
 
+```
 % python c.py 100 1000
 暴力 0.71
 分治 0.23
@@ -187,3 +188,4 @@ def find_maximum_subarray_2(A, low, high):
 暴力 10.25
 分治 1.08
 动态规划 0.23
+```
