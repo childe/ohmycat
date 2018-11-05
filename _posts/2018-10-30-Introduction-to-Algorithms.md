@@ -169,3 +169,21 @@ def find_maximum_subarray_2(A, low, high):
 
     return maximum_subarry
 ```
+
+数组长度100, 跑1000个100长度的随机的数组, 时间如下:
+
+% python c.py 100 1000
+暴力 0.71
+分治 0.23
+动态规划 0.06
+
+
+% python c.py 200 1000
+暴力 2.57
+分治 0.48
+动态规划 0.11
+
+% python c.py 400 1000
+暴力 10.25
+分治 1.08
+动态规划 0.23
