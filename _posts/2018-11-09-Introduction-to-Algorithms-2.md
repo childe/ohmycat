@@ -1,7 +1,7 @@
 ---
 
 date: 2018-11-09T14:51:37+0800
-title: 算法简介笔记2-4.2-矩阵乘法Strassen算法
+title: 算法导论 笔记2 4.2-矩阵乘法Strassen算法
 layout: post
 
 ---
