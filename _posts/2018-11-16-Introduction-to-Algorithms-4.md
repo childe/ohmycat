@@ -200,3 +200,89 @@ with tf.Session() as sess:
 ```
 
 个人感觉效果还算可以吧.
+
+
+## 5.2-3
+
+n*(1+2+3+4+5+6)/6 
+
+我觉得这个使用指示器变量的想法是很自然的, 反而一般人不会使用"正统"的方法去计算, 所以正统方法就是, n个0的概率*0 + n-1个0和1个1的概率*1 + ... + n个6的概率*6n
+
+## 5.2-4
+
+每个人拿到自己帽子的概率是 1/n , 所以期望是 1
+
+## 5.2-5
+
+看第i个数字, 前面有i-1个数字, 每一个比i大的概率是1/2, 所以i前面比i大的数字的个数期望是 (i-1)/2 , 那对i从1取到n, 得到题目答案应该是 西格玛(i-1)/2  i从1到n
+
+验证下看吧.
+
+```
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"time"
+)
+
+func generate_nums(n int) []int {
+	rand.Seed(time.Now().UnixNano())
+	var (
+		nums  = make([]int, 0)
+		exist = make(map[int]bool)
+		num   int
+	)
+	for len(nums) < n {
+		num = rand.Intn(n)
+		if _, ok := exist[num]; ok {
+			continue
+		} else {
+			exist[num] = true
+			nums = append(nums, num)
+		}
+	}
+	return nums
+}
+
+func inversion_count(nums []int) int {
+	var count = 0
+	for i, n1 := range nums {
+		for _, n2 := range nums[:i] {
+			if n1 < n2 {
+				count++
+			}
+		}
+	}
+	return count
+}
+
+func theory(n int) float32 {
+	var s float32 = 0.0
+	for i := 1; i <= n; i++ {
+		s += float32(i-1) / 2
+	}
+	return s
+}
+
+func main() {
+	var (
+		N     = 100
+		count = 1000
+	)
+
+	total := 0
+	for i := 0; i < count; i++ {
+		nums := generate_nums(N)
+		inversion_count := inversion_count(nums)
+		total += inversion_count
+	}
+	fmt.Printf("%f %f\n", theory(N), float32(total)/float32(count))
+}
+```
+
+```
+% go run 5.2.5.go
+2475.000000 2463.620117
+```
