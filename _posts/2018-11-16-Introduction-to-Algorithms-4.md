@@ -118,6 +118,85 @@ func main() {
 
 然后用python+plt把图画出来看一下.
 
+```
+import matplotlib.pyplot as plt
+import math
+
+X_REAL = []
+Y_REAL = []
+for l in open('real.txt').readlines():
+    l = l.strip()
+    if l:
+        x, _, y = l.split()
+        x, y = int(x), float(y)
+        X_REAL.append(x)
+        Y_REAL.append(y)
+
+X_THEORY = []
+Y_THEORY = []
+for l in open('theory.txt').readlines():
+    l = l.strip()
+    if l:
+        x, _, y = l.split()
+        x, y = int(x), float(y)
+        X_THEORY.append(x)
+        Y_THEORY.append(y)
+
+X_Euler = range(2, len(X_THEORY)+2)
+Y_Euler = [math.log(x-1) + 0.577 + 1/2/(x-1) for x in X_Euler]
+
+plt.plot(X_REAL, Y_REAL, 'g', X_THEORY , Y_THEORY, 'rs', X_Euler, Y_Euler, 'b^')
+plt.show()
+```
+
 ![5.2.2](/images/5.2.2.png)
 
 绿色是真实的数据, 红色是理论数据(1+1/2+...+1/(n-1))算出来的, 蓝色是欧拉公式算出来的. 还是符合的不错的. 欧拉公式参考[https://zh.wikipedia.org/wiki/调和级数](https://zh.wikipedia.org/wiki/%E8%B0%83%E5%92%8C%E7%BA%A7%E6%95%B0)
+
+题外.
+
+因为最近在看机器学习, 感觉这个是一个可以用来学习的例子, 拿tensorflow来学习一下"真实概率"的数据, 看看学习效果怎么样.
+
+```
+from __future__ import print_function
+import tensorflow as tf
+import numpy as np
+
+X = []
+Y = []
+for l in open('real.txt').readlines():
+    l = l.strip()
+    if l:
+        x, _, y = l.split()
+        x, y = float(x), float(y)
+        X.append(x)
+        Y.append(y)
+
+X = tf.cast(np.array(X), tf.float32)
+Y = tf.cast(np.array(Y), tf.float32)
+
+# Weights_1 = tf.Variable(tf.random_uniform([1], -1.0, 1.0), dtype=tf.float32)
+# Weights_2 = tf.Variable(tf.random_uniform([1], -1.0, 1.0), dtype=tf.float32)
+Weights_3 = tf.Variable(tf.random_uniform([1], -1.0, 1.0), dtype=tf.float32)
+biases = tf.Variable(tf.zeros([1]))
+
+# y = Weights_1*X*X + Weights_2*X + biases + Weights_3 * tf.math.log(X)
+y = biases + Weights_3 * tf.math.log(X)
+
+loss = tf.reduce_mean(tf.square(y-Y))
+# optimizer = tf.train.GradientDescentOptimizer(0.000001)
+optimizer = tf.train.AdamOptimizer(0.75)
+train = optimizer.minimize(loss)
+
+
+with tf.Session() as sess:
+    init = tf.global_variables_initializer()
+    sess.run(init)
+
+    for step in range(100000):
+        sess.run(train)
+        if step % 100 == 0:
+            print(step, sess.run(Weights_3), sess.run(biases), sess.run(loss))
+```
+
+个人感觉效果还算可以吧.
