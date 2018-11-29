@@ -127,7 +127,7 @@ func main() {
 ```
 
 ```
-% go run 5.3.2.go | sort | uniq -c                                                                           130 ↵
+% go run 5.3.2.go | sort | uniq -c
 2951 [1 2 0]
 3049 [2 0 1]
 ```
