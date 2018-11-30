@@ -215,3 +215,86 @@ func main() {
 ## 5.3-5
 
 优先级数列中, 每个数字都不一样的概率如下, 记`N=n**3`, 则概率为 `p=(N-1)*(N-2)*(N-3)*...*(N-n)/N**n` , `p > (N-n)**n/N**n = ((N-n)/N)**n = (1-n/N)**n` , 只需要证明 `(1-1/n**2)**n > 1-1/n` , 这个不知道怎么证明, 只是写程序看出来, 这里的2不能再小了, 哪怕小于1.99, 这个不等式也是不成立的. #TODO#
+
+## 5.3-6
+
+最简单的实现应该是保证没有重复的优先级. 如果想快一些就第一次先不管, 然后再对重复的部分排序一次, 这次保证没有重复的优先级.
+
+```
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"sort"
+	"time"
+)
+
+func permute_by_sorting(array []int) []int {
+	rand.Seed(time.Now().UnixNano())
+
+	var (
+		n                     = len(array)
+		N                     = n * n * n
+		priority_array        = make([]int, n)
+		sorted_priority_array = make([]int, n) // sort priority_array to sorted_priority_array
+		shuffled_array        = make([]int, n)
+
+		existed = map[int]bool{}
+	)
+	for i := 0; i < n; i++ {
+		r := rand.Intn(N)
+		for {
+			if _, ok := existed[r]; !ok {
+				break
+			}
+			r = rand.Intn(N)
+		}
+		existed[r] = true
+		priority_array[i] = r
+		sorted_priority_array[i] = priority_array[i]
+	}
+
+	sort.Slice(sorted_priority_array, func(i, j int) bool { return sorted_priority_array[i] < sorted_priority_array[j] })
+
+	idx_map := make(map[int]int)
+	for i := 0; i < n; i++ {
+		if _, ok := idx_map[sorted_priority_array[i]]; !ok {
+			idx_map[sorted_priority_array[i]] = i
+		}
+	}
+
+	for i := 0; i < n; i++ {
+		shuffled_array[i] = -1
+	}
+
+	for i := 0; i < n; i++ {
+		e := priority_array[i]
+		new_idx := idx_map[e]
+		for shuffled_array[new_idx] != -1 {
+			new_idx++
+		}
+		shuffled_array[new_idx] = array[i]
+	}
+
+	return shuffled_array
+}
+
+func main() {
+	var (
+		N    = 2
+		loop = 6000
+	)
+
+	array := make([]int, N)
+	for i := 0; i < N; i++ {
+		array[i] = i
+	}
+
+	for i := 0; i < loop; i++ {
+		shuffled_array := permute_by_sorting(array)
+		fmt.Println(shuffled_array)
+	}
+}
+
+```
