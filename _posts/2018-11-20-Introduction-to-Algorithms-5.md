@@ -298,3 +298,67 @@ func main() {
 }
 
 ```
+
+# 5.3-6
+
+归纳法. 假设 `random_sample(n-1, m-1)` 返回的子集中, 每一个数字出现的概率都是 `(m-1)/(n-1)` . 接下来的一步中, 选到 n 的概率是 `1/n + (m-1)/n = m/n` , 选到不是 n 的其他特定一个数字的概率是 `(m-1)/(n-1) + ((n-m)/(n-1)) * (1/n) = m/n`
+
+初始情况分析, 我还是觉得 Marceau 教授说的有道理, 从 m == 1 分析更符合人的常识吧.
+
+```
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"sort"
+	"time"
+)
+
+func random_sample(n []int, m int) []int {
+	if m == 0 {
+		return []int{}
+	}
+
+	length := len(n)
+	//fmt.Println(length)
+	s := random_sample(n[:length-1], m-1)
+	i := n[rand.Intn(length)]
+
+	var in_s = false
+	for _, j := range s {
+		if j == i {
+			in_s = true
+			break
+		}
+	}
+
+	if in_s {
+		s = append(s, n[length-1])
+	} else {
+		s = append(s, i)
+	}
+	return s
+}
+
+func main() {
+	rand.Seed(time.Now().UnixNano())
+
+	var (
+		loop = 10000
+		N    = 5
+		m    = 3
+	)
+
+	array := make([]int, N)
+	for i := 0; i < N; i++ {
+		array[i] = i
+	}
+
+	for i := 0; i < loop; i++ {
+		s := random_sample(array, m)
+		sort.Slice(s, func(i, j int) bool { return s[i] <= s[j] })
+		fmt.Println(s)
+	}
+}
+```
