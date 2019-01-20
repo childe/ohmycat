@@ -25,7 +25,7 @@ layout: post
 ## 6.2-5
 
 ```
-func max_heapify(A []int, i int) {
+func maxHeapify(A []int, i int) {
 	var (
 		size  = len(A)
 		left  int
@@ -40,7 +40,8 @@ func max_heapify(A []int, i int) {
 
 		if left < size && A[i] < A[left] {
 			max = left
-		} else if right < size && A[i] < A[right] {
+		}
+		if right < size && A[max] < A[right] {
 			max = right
 		}
 
