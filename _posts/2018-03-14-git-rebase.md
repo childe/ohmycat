@@ -82,3 +82,5 @@ Fast-forward
 [/private/tmp/1521020400 on dev]
 % git rebase --onto 472e819  dev
 ```
+
+具体文档参见  [https://git-scm.com/docs/git-rebase/2.21.0](https://git-scm.com/docs/git-rebase/2.21.0)
