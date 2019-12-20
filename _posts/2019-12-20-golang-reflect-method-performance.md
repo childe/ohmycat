@@ -68,7 +68,7 @@ func BenchmarkD(b *testing.B) {
 测试结果:
 
 ```
-% go test -bench=. -cpu=1                                                                          2 ↵
+% go test -bench=. -cpu=1
 agoos: darwin
 goarch: amd64
 BenchmarkA 	aaaaa1000000000	         0.574 ns/op
