@@ -54,15 +54,18 @@ i: 0	printi(): 0	func(): 10
 > The key point is that the arguments to the deferred functions are
 > evaluated and copied in the invocation of the defer. So:
 >
->  > defer  func()  {
->  >   fmt.Printf("func():  %v\n",  i)
->  > }()
->
+> ```go
+> defer  func()  {
+>   fmt.Printf("func():  %v\n",  i)
+> }()
+> ```
 > No arguments to func(), so i is not copied and the final value of i is
 > used when the deferred function is executed.
 >
->  > defer  printi(i)
->  > defer  fmt.Printf("i:  %v\t",  i)
+> ```go
+> defer  printi(i)
+> defer  fmt.Printf("i:  %v\t",  i)
+> ```
 >
 > In both cases, i is the argument of the deferred function, so its value
 > is copied and used when the deferred function is evaluated.
