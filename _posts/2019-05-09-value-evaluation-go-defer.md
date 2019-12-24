@@ -8,7 +8,7 @@ layout: post
 
 ## 第一个问题
 
-我在写这个的时候只是想记录一下像标题中说的, defer里面的值何时evaluate, 就像下面这一个例子. 
+我在写这个的时候只是想记录一下像标题中说的, defer 里面的 parameters 何时 evaluate, 就像下面这一个例子. (后面才发现还有 function value 何时 evaluate 的问题)
 
 例子来自于 [https://groups.google.com/forum/#!topic/golang-nuts/c7YUK65Xqgs%5B1-25%5D](https://groups.google.com/forum/#!topic/golang-nuts/c7YUK65Xqgs%5B1-25%5D)
 
@@ -47,8 +47,6 @@ i: 4	printi(): 4	func(): 10
 i: 1	printi(): 1	func(): 10 
 i: 0	printi(): 0	func(): 10
 ```
-
-有趣的是, 匿名函数里面的输出和Print(也就是非匿名函数)里面的输出是不一样的. 这里可以用一个原因来解决(有种大统一理论的感觉不... )
 
 二楼的 *emepyc* 说的很清楚, 我也不画蛇添足了, 直接复制过来
 
