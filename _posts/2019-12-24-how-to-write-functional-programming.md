@@ -135,3 +135,20 @@ print((lambda n:lambda:(lambda f,n: f(f,n))((lambda fun,n : 1 if n==0 else fun(f
 ```python
 print((lambda:lambda n:(lambda f,n:f(f,n))((lambda f,n:1 if n==0 else f(f,n-1)*n),n))()(5))
 ```
+
+## 补充 2020-01-16T12:24:07+0800
+
+觉得第四步可以把最外层的 h() 扒掉.
+
+```python
+def h():
+    return lambda n:(lambda f,n: f(f,n))((lambda fun,n : 1 if n==0 else fun(fun,n-1)*n),n)
+print(h()(5))
+```
+
+像上面这段代码, 其实没有必要先返回一个函数然后再调用这个函数. 可以直接调用, 如下
+
+```python
+(lambda n:(lambda f,n:f(f,n))((lambda f,n:1 if n==0 else f(f,n-1)*n),n))(5)
+```
+
