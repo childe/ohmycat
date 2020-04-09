@@ -16,6 +16,8 @@ date: 2020-03-23T17:12:35+0800
 
 ### 尽量使用 DataLoader
 
+### dataLoader 注册名字规范
+
 ### async
 
 ### enum
