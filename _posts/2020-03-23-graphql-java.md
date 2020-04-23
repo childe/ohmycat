@@ -22,6 +22,10 @@ date: 2020-03-23T17:12:35+0800
 
 ### enum
 
+### 手动 Dispatch
+
 ### 设计好schema!
 
 ## GraphQL-Java 框架的不足
+
+### 依赖
