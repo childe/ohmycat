@@ -31,7 +31,7 @@ func main() {
 }
 ```
 
-输出:
+在 MAC 上的输出:
 
 ```
 % while true ; do date ; sleep 1 ; done | go run a.go                                              1 ↵
@@ -41,4 +41,24 @@ func main() {
 0 Wed Aug 12 11:04:54 CST 2020
 1 Wed Aug 12 11:04:55 CST 2020
 0 Wed Aug 12 11:04:56 CST 2020
+```
+
+在 MAC 上跑 Docker, alpha:3.9.4 输出
+
+```
+/tmp # while true ; do date ; sleep 1; done | ./a
+1: Thu Aug 13 03:04:17 UTC 2020
+0: Thu Aug 13 03:04:18 UTC 2020
+0: Thu Aug 13 03:04:19 UTC 2020
+1: Thu Aug 13 03:04:20 UTC 2020
+1: Thu Aug 13 03:04:21 UTC 2020
+1: Thu Aug 13 03:04:22 UTC 2020
+0: Thu Aug 13 03:04:23 UTC 2020
+1: Thu Aug 13 03:04:24 UTC 2020
+0: Thu Aug 13 03:04:25 UTC 2020
+1: Thu Aug 13 03:04:26 UTC 2020
+0: Thu Aug 13 03:04:27 UTC 2020
+0: Thu Aug 13 03:04:28 UTC 2020
+1: Thu Aug 13 03:04:29 UTC 2020
+^C
 ```
