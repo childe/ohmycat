@@ -1,8 +1,19 @@
 ---
 
 date: 2020-08-17T15:58:11+0800
+title: '[译]Why Should We Separate A and AAAA DNS Queries'
 
 ---
+
+## 写在最前
+
+是看了朋友一篇文章[https://leeweir.github.io/posts/wget-curl-does-not-resolve-domain-properly/](https://leeweir.github.io/posts/wget-curl-does-not-resolve-domain-properly/), 直接拉到最后的根因, 看到里面写:
+
+> 不指定协议访问的时候，为什么直接从缓存里返回了结果而不做dns解析，还是要具体从libcurl的实现上去分析
+
+第一反应是不太可能, curl 的请求不会因为指定使用 ipv4 就做 DNS 解析,  ipv6 不做. libcurl 不可能这么实现.
+
+然后去翻了 libcurl 的代码, 他是使用[另外一个叫 ARES 库](https://github.com/c-ares/c-ares)去做的 DNS 解析. 在 ARES 中看到有解析 ipv6 的时候, 使用了多线程(细节有些记不清了). 然后搜索文章, 就看到了下面这篇文章: 为什么我们要分开请求 A 和 AAAA DNS?
 
 [Why Should We Separate A and AAAA DNS Queries?](https://blogs.infoblox.com/ipv6-coe/why-should-we-separate-a-and-aaaa-dns-queries/)
 
