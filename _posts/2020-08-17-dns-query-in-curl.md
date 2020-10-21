@@ -15,22 +15,34 @@ title: '[译] Why Should We Separate A and AAAA DNS Queries'
 
 然后去翻了 libcurl 的代码, 他是使用[另外一个叫 ARES 的库](https://github.com/c-ares/c-ares)去做的 DNS 解析. 在 ARES 中看到有解析 ipv6 的时候, 使用了多线程(细节有些记不清了). 然后搜索文章, 就看到了下面这篇文章: 为什么我们要分开请求 A 和 AAAA DNS?
 
-[Why Should We Separate A and AAAA DNS Queries?](https://blogs.infoblox.com/ipv6-coe/why-should-we-separate-a-and-aaaa-dns-queries/)
+原文地址 [Why Should We Separate A and AAAA DNS Queries?](https://blogs.infoblox.com/ipv6-coe/why-should-we-separate-a-and-aaaa-dns-queries/)
 
 Imagine what it was like to be an ancient mariner navigating the ocean blue at night using nothing more than stars, a sextant and a marine chronometer.  Thankfully, navigating the Internet is not as daunting.  The method that networked devices use to find their way around the digital ocean is the Domain Name System (DNS), which translates human-readable host and domain names into numerical IP addresses (and vice versa).
 
+想像一下古代的水手在夜晚的海洋航行, 除了星星,六分仪和天文钟之外, 没有其他东西可以指引方向. 还好, 在因特网上冲浪没有这么可怕. 网络设备使用域名系统(DNS) 在数字海洋里面找路, DNS 可以把人类可读的域名转成数字的 IP (或者反过来)
+
 Separate DNS Queries
+
+分开的 DNS 请求
+
 One aspect of dual-protocol behavior that often surprises peoples is that hosts send two separate DNS queries to their resolver.  And today, frankly, all hosts are dual-protocol bilingual and can use either IP version (4 or 6) for their DNS traffic or for the DNS queries and responses contained within.  The reason that there are separate IPv4 A record and IPv6 AAAA record DNS queries is that early IPv6 deployments occasionally encountered problems with older IPv4-only resolvers.
+
+让很多惊讶的一点是: 解析双协议(ipv4 ipv6)的时候, 会发送两个独立的 DNS 请求到解析服务器. 坦率的讲, 现在如今所有主机都可以支持双协议, 可以使用ipv4或者ipv6来传输数字, 或者响应 DSN 请求. 那为什么要分开请求呢? 因为一些早期的解析器只支持 IPV4, 这会导致一些问题.
+
 
 If a host sent an ANY query or an IPv6 AAAA DNS query to a resolver which was not IPv6-literate, the resolver would return an erroneous response code (RCODE) such as NXDOMAIN.  The would lead the host to believe that the domain did not exist, when in fact there was a perfectly valid IPv4 A record that, if returned, would have resulted in the host at least making a connection over IPv4.
 
-Because these older DNS resolvers could not handle a AAAA query or response correctly, the IETF issued RFC 4074 “Common Misbehavior Against DNS Queries for IPv6 Addresses”.  Now, hosts issue separate AAAA and A queries and if the AAAA query fails, it is likely that the A query will succeed and the host can connect.
+如果一个主机发送一个 ANY 类型的请求, 或者是 IPv6 类型的请求. 解析服务器恰巧不能正确处理 IPV6, 它可能会返回一个错误码, 比如说 NXDOMAIN. 这可能会导致主机认为这个域名不存在, 但实际上域名可能有一个合法的 IPV4地址. 如果我们能拿到这个 IPV4 地址, 我们还可以使用 IPV4 连接.
+
+Because these older DNS resolvers could not handle a AAAA query or response correctly, the IETF issued RFC 4074 “[Common Misbehavior Against DNS Queries for IPv6 Addresses](https://tools.ietf.org/html/rfc4074)”.  Now, hosts issue separate AAAA and A queries and if the AAAA query fails, it is likely that the A query will succeed and the host can connect.
+
+因为这些早期的 DNS 解析器不能正确处理 AAAA(也就是 IPV6啦) 请求, IETE 还在 RFC 4074 中专门讨论了这个问题, 在这个 Issue 中讨论了一些已知的现象及其影响.  现在, 分开发送 AAAA 和 A 请求, 如果 AAAA 失败了, 很可能 A 请求还能正确返回, 我们也可以继续建连.
 
 For example, here is a Wireshark packet capture showing that a simple DNS query for www.rmv6tf.org resulted four packets on the network.  The DNS query started with an A record query (packet 74) followed by an A record response (packet 75).  Then an AAAA record query (packet 76) was sent and an AAAA record response (packet 79) was returned.  The AAAA query is expanded in the frame packet decode window.
 
-[!Wireshark Packet Capture](https://blogs.infoblox.com/wp-content/uploads/wireshark-packet-capture.jpg)
+来看个例子, 下面是 Wireshark 抓包, 显示了一个到 www.rmv6tf.org 的 DNS 请求和返回, 一共4个包. 先是发起了一个 A 记录请求, 接着一个 A 记录的返回. 然后是 AAAA 记录的请求和返回.
 
-Wireshark Packet Capture
+[!Wireshark Packet Capture](https://blogs.infoblox.com/wp-content/uploads/wireshark-packet-capture.jpg)
 
 In 2011, when World IPv6 Day was approaching, there was significant work performed to improve how hosts operated in dual-protocol environments and recovered from failures of either IP version.  The IETF issued RFC 6555 “Happy Eyeballs”, which outlined a more aggressive algorithm that would provide connection resiliency and make the Internet users/customers/eyeballs happier with their connectivity.  This happy eyeballs technique can be implemented in a  web browser like Chrome, or the algorithm can be implemented in the host OS like with Microsoft Network Connectivity Status Indicator (NCSI) or in Apple iOS or OS X.  Regardless, the outcome is that hosts can operate effectively in dual-protocol environments and can recover and establish IP connections using the version that provides the best end-user experience.
 
