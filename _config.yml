@@ -37,6 +37,8 @@ texture:
   style: yellow
   title: 派猴子来的救兵
   tagline: Developer. Designer
+  social_links:
+      github:  childe
   date_format: "%Y %b %-d"
   showPicker: false
   show_excerpts: true
