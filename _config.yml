@@ -19,3 +19,5 @@ paginate: 10
 
 gems :
   - jekyll-paginate
+
+theme: jekyll-theme-dinky
