@@ -29,7 +29,10 @@ github_username:  childe
 
 # Build settings
 #theme: minima
-theme: jekyll-theme-leap-day
+#theme: jekyll-theme-leap-day
+
+remote_theme: rundocs/jekyll-rtd-theme
+
 plugins:
   - jekyll-feed
 
