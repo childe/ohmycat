@@ -29,7 +29,7 @@ github_username:  childe
 
 # Build settings
 #theme: minima
-theme: jekyll-theme-dinky
+theme: jekyll-theme-leap-day
 plugins:
   - jekyll-feed
 
