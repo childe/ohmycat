@@ -31,7 +31,8 @@ github_username:  childe
 #theme: minima
 #theme: jekyll-theme-leap-day
 
-remote_theme: rundocs/jekyll-rtd-theme
+#remote_theme: rundocs/jekyll-rtd-theme
+remote_theme: thelehhman/texture
 
 plugins:
   - jekyll-feed
