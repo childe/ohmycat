@@ -34,12 +34,12 @@ github_username:  childe
 #remote_theme: rundocs/jekyll-rtd-theme
 remote_theme: thelehhman/texture
 texture:
-  style: yellow
-  title: 派猴子来的救兵
-  tagline: Developer. Designer
-  social_links:
-      github:  childe
-  showPicker: false
+    style: blue
+    title: 派猴子来的救兵
+    tagline: Developer. Designer
+    social_links:
+        github:  childe
+    showPicker: false
 minima:
   date_format: "%Y %b %-d"
 show_excerpts: true
