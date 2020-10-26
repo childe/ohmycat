@@ -2,7 +2,6 @@
 
 date: 2020-08-17T15:58:11+0800
 title: '[译] Why Should We Separate A and AAAA DNS Queries'
-layout: post
 
 ---
 
