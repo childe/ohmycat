@@ -28,8 +28,8 @@ url: "ohmycat.me" # the base hostname & protocol for your site, e.g. http://exam
 github_username:  childe
 
 # Build settings
-theme: minima
-#theme: jekyll-theme-dinky
+#theme: minima
+theme: jekyll-theme-dinky
 plugins:
   - jekyll-feed
 
