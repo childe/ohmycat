@@ -39,9 +39,10 @@ texture:
   tagline: Developer. Designer
   social_links:
       github:  childe
-  date_format: "%Y %b %-d"
   showPicker: false
-  show_excerpts: true
+minima:
+  date_format: "%Y %b %-d"
+show_excerpts: true
   #showNav: true
 
 plugins:
