@@ -22,41 +22,99 @@ Socket Activation 的基本思想并不是新的。inetd 从一开始就是大�
 
 Spawning one instance per connection was how inetd was primarily used, even though inetd actually understood another mode: on the first incoming connection it would notice this via poll() (or select()) and spawn a single instance for all future connections. (This was controllable with the wait/nowait options.) That way the first connection would be slow to set up, but subsequent ones would be as fast as with a standalone service. In this mode inetd would work in a true on-demand mode: a service would be made available lazily when it was required.
 
+每个连接生成一个实例是 inetd 的主要使用方式，尽管 inetd 实际上也知道另一种模式：在第一个连接传入时，它会通过 poll（）（或 select（））感知到，并为将来的所有连接生成一个实例。（可以通过 wait/nowait 选项来控制。）这样一来，第一个连接的建立速度会很慢，但随后的连接将与独立服务一样快。在这种模式下，inetd 将在真正的在按需模式下工作：当服务被需要的时候，它才被创建，延迟的创建。
+
 inetd's focus was clearly on AF_INET (i.e. Internet) sockets. As time progressed and Linux/Unix left the server niche and became increasingly relevant on desktops, mobile and embedded environments inetd was somehow lost in the troubles of time. Its reputation for being slow, and the fact that Linux' focus shifted away from only Internet servers made a Linux machine running inetd (or one of its newer implementations, like xinetd) the exception, not the rule.
+
+inetd 的关注点显然是 AF_neinet（即互联网） socket 。随着时间的推移，Linux/Unix 离开了服务器领域，在台式机，移动和嵌入式环境上变得越来越多。inetd 慢慢地陷入了麻烦。它的速度慢的特性，以及 Linux 的重心从互联网服务器移走的事实，使得运行 inetd（或其更新的实现之一，如 xinetd）的 Linux 机器成为例外，而不是通行规则。
 
 When Apple engineers worked on optimizing the MacOS boot time they found a new way to make use of the idea of socket activation: they shifted the focus away from AF_INET sockets towards AF_UNIX sockets. And they noticed that on-demand socket activation was only part of the story: much more powerful is socket activation when used for all local services including those which need to be started anyway on boot. They implemented these ideas in launchd, a central building block of modern MacOS X systems, and probably the main reason why MacOS is so fast booting up.
 
+当苹果工程师致力于优化 MacOS 引导时间时，他们发现了一种利用 socket 激活思想的新方法：他们将注意力从 AF_INET sockets 转移到 AF_UNIX sockets。他们注意到，按需的 socket 激活只是故事的一部分：当把 socket 激活用于所有本地服务（包括那些必须在启动时启动的服务）时，它的功能要强大得多。他们在 launchd 中实现了这些想法，launchd 是现代 macosx 系统的核心构建块，这可能是 MacOS 启动速度如此之快的主要原因。
+
 But, before we continue, let's have a closer look what the benefits of socket activation for non-on-demand, non-Internet services in detail are. Consider the four services Syslog, D-Bus, Avahi and the Bluetooth daemon. D-Bus logs to Syslog, hence on traditional Linux systems it would get started after Syslog. Similarly, Avahi requires Syslog and D-Bus, hence would get started after both. Finally Bluetooth is similar to Avahi and also requires Syslog and D-Bus but does not interface at all with Avahi. Sinceoin a traditional SysV-based system only one service can be in the process of getting started at a time, the following serialization of startup would take place: Syslog → D-Bus → Avahi → Bluetooth (Of course, Avahi and Bluetooth could be started in the opposite order too, but we have to pick one here, so let's simply go alphabetically.). To illustrate this, here's a plot showing the order of startup beginning with system startup (at the top).
 
-Parallelization plot
+但是，在继续之前，让我们更详细地了解一下非按需、非互联网服务的 socket 激活的好处是什么。考虑一下 Syslog、D-Bus、Avahi 和蓝牙守护进程这四种服务。D-Bus 将日志记录到 Syslog，因此在传统的 Linux 系统上，它将在 Syslog 之后启动。类似地，Avahi 需要 Syslog 和 D-Bus，因此在这两者之后都会启动。最后，蓝牙类似于 Avahi，也需要 Syslog 和 D-Bus，但根本不与 Avahi 交互。由于在传统的基于 SysV 的系统中，一次只能启动一个服务，因此会发生以下启动序列化：Syslog→D-Bus→Avahi→Bluetooth（当然，Avahi 和 Bluetooth 也可以按相反的顺序启动，但我们必须在这里选择一个，所以我们就按字母顺序来吧。为了说明这一点，这里有一个图，显示了从系统启动开始的启动顺序。
+
+[!Parallelization plot](http://0pointer.de/public/parallelization-small.png)
+
 Certain distributions tried to improve this strictly serialized start-up: since Avahi and Bluetooth are independent from each other, they can be started simultaneously. The parallelization is increased, the overall startup time slightly smaller. (This is visualized in the middle part of the plot.)
+
+某些发行版试图改进这种严格序列化的启动方式：由于 Avahi 和 Bluetooth 彼此独立，所以它们可以同时启动。并行化程度提高，整体启动时间略短。（这在图的中间部分可见。）
 
 Socket activation makes it possible to start all four services completely simultaneously, without any kind of ordering. Since the creation of the listening sockets is moved outside of the daemons themselves we can start them all at the same time, and they are able to connect to each other's sockets right-away. I.e. in a single step the /dev/log and /run/dbus/system_bus_socket sockets are created, and in the next step all four services are spawned simultaneously. When D-Bus then wants to log to syslog, it just writes its messages to /dev/log. As long as the socket buffer does not run full it can go on immediately with what else it wants to do for initialization. As soon as the syslog service catches up it will process the queued messages. And if the socket buffer runs full then the client logging will temporarily block until the socket is writable again, and continue the moment it can write its log messages. That means the scheduling of our services is entirely done by the kernel: from the userspace perspective all services are run at the same time, and when one service cannot keep up the others needing it will temporarily block on their request but go on as soon as these requests are dispatched. All of this is completely automatic and invisible to userspace. Socket activation hence allows us to drastically parallelize start-up, enabling simultaneous start-up of services which previously were thought to strictly require serialization. Most Linux services use sockets as communication channel. Socket activation allows starting of clients and servers of these channels at the same time.
 
+Socket 激活可以完全同时启动所有四个服务，不用按顺序启动。listening sockets 的创建在守护进程本身之外，我们可以同时启动进程，并且它们能够立即连接到彼此的socket。比如说, 在一个独立的步骤中，创建了 /dev/log 和 /run/dbus/system_bus_socket，下一步将同时生成所有四个服务。当 D-Bus 想要记录到 syslog 时，它只将其消息写入 /dev/log。只要socket缓冲区没有满负荷运行，它就可以立即执行它想进行初始化的其他操作。一旦 syslog 服务赶上，它就会处理排队的消息。如果 socket 缓冲区满了，那么客户机日志记录将暂时阻塞，直到 socket 再次可写为止，并在可以写入日志消息的那一刻继续。这意味着服务的调度完全由内核来完成：从用户空间的角度来看，所有服务都是同时运行的，当一个服务不能跟上依赖它的服务时，它将暂时阻塞它们的请求，但一旦这些请求被处理掉，它们就会继续运行。所有这些都是完全自动的，对用户空间是透明的。因此，Socket 激活允许我们极大地并行化启动，从而能够同时启动以前被认为严格要求序列化的服务。大多数 Linux 服务使用 socket 作为通信通道。 socket 激活允许同时启动这些通道的客户端和服务器。
+
 But it's not just about parallelization. It offers a number of other benefits:
 
-We no longer need to configure dependencies explicitly. Since the sockets are initialized before all services they are simply available, and no userspace ordering of service start-up needs to take place anymore. Socket activation hence drastically simplifies configuration and development of services.
-If a service dies its listening socket stays around, not losing a single message. After a restart of the crashed service it can continue right where it left off.
-If a service is upgraded we can restart the service while keeping around its sockets, thus ensuring the service is continously responsive. Not a single connection is lost during the upgrade.
-We can even replace a service during runtime in a way that is invisible to the client. For example, all systems running systemd start up with a tiny syslog daemon at boot which passes all log messages written to /dev/log on to the kernel message buffer. That way we provide reliable userspace logging starting from the first instant of boot-up. Then, when the actual rsyslog daemon is ready to start we terminate the mini daemon and replace it with the real daemon. And all that while keeping around the original logging socket and sharing it between the two daemons and not losing a single message. Since rsyslog flushes the kernel log buffer to disk after start-up all log messages from the kernel, from early-boot and from runtime end up on disk.
-For another explanation of this idea consult the original blog story about systemd.
+但这不仅仅是并行化。它还提供了许多其他好处：
+
+- We no longer need to configure dependencies explicitly. Since the sockets are initialized before all services they are simply available, and no userspace ordering of service start-up needs to take place anymore. Socket activation hence drastically simplifies configuration and development of services.
+
+  我们不再需要显式地配置依赖关系。由于 socket 是在所有服务之前初始化的，它们是可用的，所以不再需要对服务启动进行排序。因此， socket 激活大大简化了服务的配置和开发。
+
+- If a service dies its listening socket stays around, not losing a single message. After a restart of the crashed service it can continue right where it left off.
+
+  如果一个服务死了，它的侦听 socket 会一直存在，而不会丢失一条消息。重新启动崩溃的服务后，它可以继续在它停止的地方继续。
+
+- If a service is upgraded we can restart the service while keeping around its sockets, thus ensuring the service is continously responsive. Not a single connection is lost during the upgrade.
+
+  如果一个服务升级了，我们可以重新启动该服务，同时保持它的 socket ，从而确保该服务持续响应。升级过程中没有一个连接丢失。
+
+- We can even replace a service during runtime in a way that is invisible to the client. For example, all systems running systemd start up with a tiny syslog daemon at boot which passes all log messages written to /dev/log on to the kernel message buffer. That way we provide reliable userspace logging starting from the first instant of boot-up. Then, when the actual rsyslog daemon is ready to start we terminate the mini daemon and replace it with the real daemon. And all that while keeping around the original logging socket and sharing it between the two daemons and not losing a single message. Since rsyslog flushes the kernel log buffer to disk after start-up all log messages from the kernel, from early-boot and from runtime end up on disk.
+
+  我们甚至可以在运行时以客户端看不见的方式替换服务。例如，所有运行 systemd 的系统在启动时都会使用一个很小的 syslog 守护进程来启动，该守护进程将写入 /dev/log 的所有日志消息传递到内核消息缓冲区。这样我们就可以从启动的第一个瞬间开始提供可靠的用户空间日志记录。然后，当实际的 rsyslog 守护进程准备好启动时，我们终止迷你守护进程，并将其替换为真正的守护进程。所有这一切，同时保留原始日志 socket ，并在两个守护进程之间共享它，而不会丢失一条消息。由于 rsyslog 在启动后会将内核日志缓冲区刷新到磁盘上，因此来自内核的所有日志消息、从早期引导到运行时的日志消息都会在磁盘上结束。
+
+For another explanation of this idea consult [the original blog story about systemd](http://0pointer.de/blog/projects/systemd.html).
+
+关于这个想法的另一个解释，请参考关于 [systemd 的原始博客故事](http://0pointer.de/blog/projects/systemd.html)。
 
 Socket activation has been available in systemd since its inception. On Fedora 15 a number of services have been modified to implement socket activation, including Avahi, D-Bus and rsyslog (to continue with the example above).
 
+systemd 从一开始就使用了 socket 激活。在 Fedora15 上，许多服务更改为利用 socket 激活，包括 Avahi、D-Bus 和 rsyslog。
+
 systemd's socket activation is quite comprehensive. Not only classic sockets are support but related technologies as well:
 
-AF_UNIX sockets, in the flavours SOCK_DGRAM, SOCK_STREAM and SOCK_SEQPACKET; both in the filesystem and in the abstract namespace
-AF_INET sockets, i.e. TCP/IP and UDP/IP; both IPv4 and IPv6
-Unix named pipes/FIFOs in the filesystem
-AF_NETLINK sockets, to subscribe to certain kernel features. This is currently used by udev, but could be useful for other netlink-related services too, such as audit.
-Certain special files like /proc/kmsg or device nodes like /dev/input/*.
-POSIX Message Queues
+systemd 的 socket 激活非常全面。不仅支持经典 socket ，还支持其他相关技术：
+
+- AF_UNIX sockets, in the flavours SOCK_DGRAM, SOCK_STREAM and SOCK_SEQPACKET; both in the filesystem and in the abstract namespace
+
+  AF_UNIX sockets, in the flavours SOCK_DGRAM, SOCK_STREAM and SOCK_SEQPACKET; 不管是文件系统或者是抽象命名空间
+
+- AF_INET sockets, i.e. TCP/IP and UDP/IP; both IPv4 and IPv6
+
+  AF_INET socket ，即 TCP/IP 和 UDP/IP；包括 IPv4 和 IPv6
+
+- Unix named pipes/FIFOs in the filesystem
+
+  文件系统中的 Unix 命名管道 / FIFO
+
+- AF_NETLINK sockets, to subscribe to certain kernel features. This is currently used by udev, but could be useful for other netlink-related services too, such as audit.
+
+  AF_NETLINK sockets，用于订阅某些内核功能。目前 udev 正在使用这一功能，但它也可以用于其他与 netlink 相关的服务，例如 audit。
+
+- Certain special files like /proc/kmsg or device nodes like /dev/input/*.
+
+  某些特殊文件，如 /proc/kmsg 或设备节点，如 /dev/input/*。
+
+- POSIX Message Queues
+
+  POSIX 消息队列
+
 A service capable of socket activation must be able to receive its preinitialized sockets from systemd, instead of creating them internally. For most services this requires (minimal) patching. However, since systemd actually provides inetd compatibility a service working with inetd will also work with systemd -- which is quite useful for services like sshd for example.
+
+使用 socket 激活的服务必须使用从 systemd 预初始化的 socket，而不是在服务内部创建它们。对于大多数服务，这需要（最小）修补程序。不过呢，由于 systemd 提供了 inetd 兼容能力，一个使用 inetd 的服务也可以使用 systemd 工作 —— 这对于 sshd 这样的服务非常有用。
 
 So much about the background of socket activation, let's now have a look how to patch a service to make it socket activatable. Let's start with a theoretic service foobard. (In a later blog post we'll focus on real-life example.)
 
+关于 socket 激活的背景，我们就说到这里了. 现在让我们来看看如何对服务进行修补，使其能够使用socket 激活。让我们从一个理论服务 foobard 开始。（在稍后的博客文章中，我们将关注真实生活中的例子。）
+
 Our little (theoretic) service includes code like the following for creating sockets (most services include code like this in one way or another):
 
+我们的小型（理论上）服务包含以下代码用来创建 socket（大多数服务都以某种方式包含这样的代码）：
+
+```
 /* Source Code Example #1: ORIGINAL, NOT SOCKET-ACTIVATABLE SERVICE */
 ...
 union {
@@ -85,6 +143,8 @@ if (listen(fd, SOMAXCONN) < 0) {
         exit(1);
 }
 ...
+```
+
 A socket activatable service may use the following code instead:
 
 /* Source Code Example #2: UPDATED, SOCKET-ACTIVATABLE SERVICE */
