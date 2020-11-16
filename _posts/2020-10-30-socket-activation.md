@@ -26,7 +26,7 @@ Spawning one instance per connection was how inetd was primarily used, even thou
 
 inetd's focus was clearly on AF_INET (i.e. Internet) sockets. As time progressed and Linux/Unix left the server niche and became increasingly relevant on desktops, mobile and embedded environments inetd was somehow lost in the troubles of time. Its reputation for being slow, and the fact that Linux' focus shifted away from only Internet servers made a Linux machine running inetd (or one of its newer implementations, like xinetd) the exception, not the rule.
 
-inetd 的关注点显然是 AF_neinet（即互联网） socket 。随着时间的推移，Linux/Unix 离开了服务器领域，在台式机，移动和嵌入式环境上变得越来越多。inetd 慢慢地陷入了麻烦。它的速度慢的特性，以及 Linux 的重心从互联网服务器移走的事实，使得运行 inetd（或其更新的实现之一，如 xinetd）的 Linux 机器成为例外，而不是通行规则。
+inetd 的关注点显然是 AF_INET（即互联网）socket。随着时间的推移，Linux/Unix 离开了服务器领域，在台式机，移动和嵌入式环境上变得越来越多。inetd 慢慢地陷入了麻烦。它的速度慢的特性，以及 Linux 的重心从互联网服务器移走的事实，使得运行 inetd（或其更新的实现之一，如 xinetd）的 Linux 机器成为少数，而不是标准。
 
 When Apple engineers worked on optimizing the MacOS boot time they found a new way to make use of the idea of socket activation: they shifted the focus away from AF_INET sockets towards AF_UNIX sockets. And they noticed that on-demand socket activation was only part of the story: much more powerful is socket activation when used for all local services including those which need to be started anyway on boot. They implemented these ideas in launchd, a central building block of modern MacOS X systems, and probably the main reason why MacOS is so fast booting up.
 
