@@ -1,12 +1,13 @@
 ---
 
 date: 2020-10-30T14:40:51+0800
-title: 'socket activation'
+title: 'systemd for Developers I'
 layout: post
 
 ---
 
-systemd for Developers I
+原文[systemd for Developers I](http://0pointer.de/blog/projects/socket-activation.html)
+
 
 systemd not only brings improvements for administrators and users, it also brings a (small) number of new APIs with it. In this blog story (which might become the first of a series) I hope to shed some light on one of the most important new APIs in systemd: Socket Activation
 
@@ -147,6 +148,9 @@ if (listen(fd, SOMAXCONN) < 0) {
 
 A socket activatable service may use the following code instead:
 
+端口激活服务可能会用下面这样的代码:
+
+```
 /* Source Code Example #2: UPDATED, SOCKET-ACTIVATABLE SERVICE */
 ...
 #include "sd-daemon.h"
@@ -160,10 +164,17 @@ if (sd_listen_fds(0) != 1) {
 
 fd = SD_LISTEN_FDS_START + 0;
 ...
+```
+
 systemd might pass you more than one socket (based on configuration, see below). In this example we are interested in one only. sd_listen_fds() returns how many file descriptors are passed. We simply compare that with 1, and fail if we got more or less. The file descriptors systemd passes to us are inherited one after the other beginning with fd #3. (SD_LISTEN_FDS_START is a macro defined to 3). Our code hence just takes possession of fd #3.
+
+systemd 可能会向你传递多个 socket（这个依赖于配置，请参见下文）。在这个例子中，我们只对一个感兴趣。sd_listen_fds 返回传递了多少个文件描述符。我们只需将其与1进行比较，如果得到更多或更少，则失败。systemd 传递给我们的文件描述符从fd#3开始, 往上递增。（SD_LISTEN_FDS_START是一个定义为3的宏）。因此我们的代码把fd 设置成 3。 (这里我有点不明白, 写程序的人如果自己先创建了Socket呢? 还是说程序员要自己注意不要这样做?)
 
 As you can see this code is actually much shorter than the original. This of course comes at the price that our little service with this change will no longer work in a non-socket-activation environment. With minimal changes we can adapt our example to work nicely both with and without socket activation:
 
+如你所见，这段代码实际上比之前的代码(不使用socket activation的)要短得多。当然，这样做的代价是我们的服务在非socket激活环境中不再工作。只需稍加修改，我们就可以调整我们的示例，无论有没有socket激活都能很好地工作：
+
+```
 /* Source Code Example #3: UPDATED, SOCKET-ACTIVATABLE SERVICE WITH COMPATIBILITY */
 ...
 #include "sd-daemon.h"
@@ -203,40 +214,78 @@ else {
         }
 }
 ...
+```
+
 With this simple change our service can now make use of socket activation but still works unmodified in classic environments. Now, let's see how we can enable this service in systemd. For this we have to write two systemd unit files: one describing the socket, the other describing the service. First, here's foobar.socket:
 
+通过这个简单的更改，我们的服务现在可以使用socket激活，但在经典环境中仍然可以正常工作。现在，让我们看看如何在systemd中启用此服务。为此，我们必须编写两个systemd单元文件：一个描述socket，另一个描述服务。首先看foobar.socket:
+
+```
 [Socket]
 ListenStream=/run/foobar.sk
 
 [Install]
 WantedBy=sockets.target
-And here's the matching service file foobar.service:
+```
 
+下面是对应的服务描述文件 foobar.service:
+
+```
 [Service]
 ExecStart=/usr/bin/foobard
+```
+
 If we place these two files in /etc/systemd/system we can enable and start them:
 
+我们将这两个文件放在/etc/systemd/system中，就可以激活并启动它们：
+
+```
 # systemctl enable foobar.socket
 # systemctl start foobar.socket
+```
+
 Now our little socket is listening, but our service not running yet. If we now connect to /run/foobar.sk the service will be automatically spawned, for on-demand service start-up. With a modification of foobar.service we can start our service already at startup, thus using socket activation only for parallelization purposes, not for on-demand auto-spawning anymore:
 
+现在我们的 socket 正在监听，但是我们的服务还没有运行。如果我们现在连接 /run/foobar.sk 服务将自动创建，以便按需启动服务。像下面这样修改foobar.service 我们可以在启动时就启动服务，这种情况下只是将socket激活用于并行化目的，不再用于按需创建服务：
+
+
+```
 [Service]
 ExecStart=/usr/bin/foobard
 
 [Install]
 WantedBy=multi-user.target
+```
+
 And now let's enable this too:
 
+现在激活它:
+
+```
 # systemctl enable foobar.service
 # systemctl start foobar.service
+```
+
 Now our little daemon will be started at boot and on-demand, whatever comes first. It can be started fully in parallel with its clients, and when it dies it will be automatically restarted when it is used the next time.
+
+现在，我们的守护进程将在引导和按需启动时启动，无论哪个先启动。它完全可以和它的Client并行启动，当它挂了后，它将在下次被使用时自动重新启动。
 
 A single .socket file can include multiple ListenXXX stanzas, which is useful for services that listen on more than one socket. In this case all configured sockets will be passed to the service in the exact order they are configured in the socket unit file. Also, you may configure various socket settings in the .socket files.
 
+一个.socket文件可以包含多个 ListenXXX ，这对于侦听多个 socket 的服务很有用。在这种情况下，所有配置的 socket 都将按照它们在 socket 单元文件中的配置顺序传递给服务。此外，您可以在.socket文件中配置各种socket参数。
+
 In real life it's a good idea to include description strings in these unit files, to keep things simple we'll leave this out of our example. Speaking of real-life: our next installment will cover an actual real-life example. We'll add socket activation to the CUPS printing server.
+
+在现实生活中，在这些单元文件中包含描述字符串(这是啥?注释?)是一个好主意，为了简单起见，我们在示例中先不说这个。说到现实生活：我们的下一期将介绍一个实际的例子: 我们将向CUPS打印服务器添加socket激活。
 
 The sd_listen_fds() function call is defined in sd-daemon.h and sd-daemon.c. These two files are currently drop-in .c sources which projects should simply copy into their source tree. Eventually we plan to turn this into a proper shared library, however using the drop-in files allows you to compile your project in a way that is compatible with socket activation even without any compile time dependencies on systemd. sd-daemon.c is liberally licensed, should compile fine on the most exotic Unixes and the algorithms are trivial enough to be reimplemented with very little code if the license should nonetheless be a problem for your project. sd-daemon.c contains a couple of other API functions besides sd_listen_fds() that are useful when implementing socket activation in a project. For example, there's sd_is_socket() which can be used to distuingish and identify particular sockets when a service gets passed more than one.
 
+sd_listen_fds（）函数定义在 sd-daemon.h 和 sd-daemon.c 。目前,这两个文件是drop-in 源文件，只需将其复制到你的源代码中即可。最终，我们计划将其做成一个共享库，但是使用drop-in文件可以让您以一种与socket激活兼容的方式编译您的项目，即使在systemd上没有任何编译时依赖性。sd-daemon.c 是自由授权的，应该在最奇特的unix上也能编译得很好，如果许可证对你的项目是个问题的话，算法非常简单，你可以用很少的代码重新实现。sd-daemon.c除了sd_listen_fds（）之外，还包含两个其他API函数，这些函数在项目中实现 socket 激活时非常有用。例如，有一个sd_is_socket（），当一个服务被传递到多个 socket 时，它可以用来区分和标识特定的 socket。
+
 Let me point out that the interfaces used here are in no way bound directly to systemd. They are generic enough to be implemented in other systems as well. We deliberately designed them as simple and minimal as possible to make it possible for others to adopt similar schemes.
 
+我要指出，这里使用的接口绝不直接捆绑到 systemd。它们具有足够的通用性，可以在其他系统中实现。我们特意设计了尽可能简单和最小的方案，使其他人能够采用类似的方案。
+
 Stay tuned for the next installment. As mentioned, it will cover a real-life example of turning an existing daemon into a socket-activatable one: the CUPS printing service. However, I hope this blog story might already be enough to get you started if you plan to convert an existing service into a socket activatable one. We invite everybody to convert upstream projects to this scheme. If you have any questions join us on #systemd on freenode.
+
+请继续关注下一期。如前所述，本文将介绍一个将现有守护进程转换为可激活 socket 的守护进程的实例：CUPS打印服务。但是，如果您计划将现有服务转换为 socket 激活的服务，我希望这篇博客故事已经足够让你开始使用。我们邀请大家把 upstream 项目转化为这个方案。如果你有任何问题，请在 freenode #systemd 与我们联系。
