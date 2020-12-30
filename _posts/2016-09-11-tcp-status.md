@@ -83,7 +83,7 @@ Client在收到Server的SYN并回复ACK,这时候Client的Socket状态变成ESTA
 Server在收到ACK之后变成ESTABLISHED.
 
 这个时候, 连接还存在于内核的队列中, 并没有交给应用层.  
-应用层调用**accept**之后, 内核队列中移除这个Socket交给应用层.
+应用层调用**accept**之后, 内核队列(全连接队列)中移除这个Socket交给应用层.
 
 ## 实验
 
