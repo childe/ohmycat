@@ -5,38 +5,47 @@ title: Introducing the Journal
 
 ---
 
+[Introducing the Journal](http://0pointer.net/blog/projects/the-journal.html)
+[Introducing the Journal](https://docs.google.com/document/pub?id=1IC9yOXj7j6cdLLxWEBAGRL6wl97tFxgjLUEHIX3MSTs)
+
 现在觉得 Systemd 比之前的管理方式好。但对于使用 Journal 管理日志还有些不明白，之前的日志方式（Rsyslog 或者直接日志打印到某到文件文件）不行？使用 Journal 的必要性在哪里？ 看到 Systemd 作者的这篇文件，翻译学习一下。
 
 
 During the past weeks we have been working on a new feature for systemd, that we’d like to introduce to you today. At the same time as it helps us to substantially decrease the footprint of a minimal Linux system it brings a couple of new concepts and replaces a major component of a classic Unix system. Due that it probably deserves a longer introduction. So, grab yourself a good cup of swiss hot chocolate, lean back, read and enjoy.
 
-Background: syslog
-An important component of every Unix system for a long time has been the syslog daemon. During our long history multiple implementations have been used in the various Linux distributions for this job, but in essence they all implemented a very similar logic and used nearly identical file formats on disk.
+在过去的几周里，我们一直在为 systemd 开发一个新特性，今天我们来给你介绍 一下它吧！它帮助我们大大减少了最小 Linux 系统的占用空间，同时，它还带来了一些新概念，并取代了经典 Unix 系统的一个主要组件。因为它可能值得一个长长的介绍。所以，给自己端上一杯咖啡，舒服的坐下，看下去，尽情享受吧。
 
+Background: syslog
+
+An important component of every Unix system for a long time has been the syslog daemon. During our long history multiple implementations have been used in the various Linux distributions for this job, but in essence they all implemented a very similar logic and used nearly identical file formats on disk.
+长期以来，syslog 守护进程一直是每个 Unix 系统的一个重要组件。在我们漫长的历史中，各种 Linux 发行版都使用了多种实现来完成这项工作，但实际上它们都实现了非常相似的逻辑，并在磁盘上使用了几乎相同的文件格式。
 
 The purpose of a syslog daemon is -- as the name suggests -- system logging. It receives relatively free-form log messages from applications and services and stores them on disk. Usually, the only meta data attached to these messages are a facility and a priority value, a timestamp, a process tag and a PID. These properties are passed in from the client, not verified and usually stored away as-is. Most of these fields are optional, and the precise syntax is varying wildly in the various implementations. An internet RFC eventually tried to formalize and improve the message format a bit, however the most important implementations (such as glibc’s syslog() call) make little use of these improvements.
 
+syslog 守护进程的目的是 —— 顾名思义 —— 记录系统日志。它接收来自应用程序和服务的相对自由格式的日志消息，并将它们存储在磁盘上。通常，附加到这些消息的元数据仅有facility和优先级、时间戳、进程Tag 和 PID。这些属性是从客户端传入的，未经验证，通常按原样存储。这些字段中的大多数是可选的，并且在不同的实现中，精细的语法差别很大。终于有份 RFC 尝试对消息格式进行一些格式化和改进，但是最重要的实现（如 glibc 的 syslog 调用）几乎没有使用这些改进。
 
 The fact that syslog enforces very little format of the log messages makes it both very versatile and powerful, but at the same time is also one of its biggest drawbacks. Since no structured format is defined, parsing and processing of log messages systematically is messy: the context information the generator of the messages knew is lost during the transformation into terse, lossy human language, and most log analyzers then try to parse the human language again in an attempt to reconstruct the context.
 
+syslog 只强制规范很少的日志消息格式，这让它功能强大，但同时也是它最大的缺点之一。由于没有定义结构化格式，系统地解析和处理日志消息是混乱的：消息生成器所知道的上下文信息在转换为简洁、有损的人类语言的过程中丢失了，很多日志分析器又在随后尝试再次解析人类语言，试图重建上下文。
 
 Syslog has been around for ~30 years, due to its simplicity and ubiquitousness it is an invaluable tool for administrators. However, the number of limitations are substantial, and over time they have started to be serious problems:
 
+Syslog 已经存在了约 30 年，由于它的简单性和普遍性，它对于管理员来说是一个非常宝贵的工具。然而，限制也是很明显的，随着时间的推移，它们已经开始成为严重的问题：
 
-The message data is generally not authenticated, every local process can claim to be Apache under PID 4711, and syslog will believe that and store it on disk.
-The data logged is very free-form. Automated log-analyzers need to parse human language strings to a) identify message types, and b) parse parameters from them. This results in regex horrors, and a steady need to play catch-up with upstream developers who might tweak the human language log strings in new versions of their software. Effectively, in a away, in order not to break user-applied regular expressions all log messages become ABI of the software generating them, which is usually not intended by the developer.
-The timestamps generally do not carry timezone information, even though some newer specifications define support for it.
-Syslog is only one of many log systems on local machines. Separate logs are kept for utmp/wtmp, lastlog, audit, kernel logs, firmware logs, and a multitude of application-specific log formats. This is not only unnecessarily complex, but also hides the relation between the log entries in the various subsystems.
-Reading log files is simple but very inefficient. Many key log operations have a complexity of O(n). Indexing is generally not available.
-The syslog network protocol is very simple, but also very limited. Since it generally supports only a push transfer model, and does not employ store-and-forward, problems such as Thundering Herd or packet loss severely hamper its use.
-Log files are easily manipulable by attackers, providing easy ways to hide attack information from the administrator
-Access control is non-existent. Unless manually scripted by the administrator a user either gets full access to the log files, or no access at all.
-The meta data stored for log entries is limited, and lacking key bits of information, such as service name, audit session or monotonic timestamps.
-Automatic rotation of log files is available, but less than ideal in most implementations: instead of watching disk usage continuously to enforce disk usage limits rotation is only attempted in fixed time intervals, thus leaving the door open to many DoS attacks.
-Rate limiting is available in some implementations, however, generally does not take the disk usage or service assignment into account, which is highly advisable.
-Compression in the log structure on disk is generally available but usually only as effect of rotation and has a negative effect on the already bad complexity behaviour of many key log operations.
-Classic Syslog traditionally is not useful to handle early boot or late shutdown logging, even though recent improvements (for example in systemd) made this work.
-Binary data cannot be logged, which in some cases is essential (Examples: ATA SMART blobs or SCSI sense data, firmware dumps)
+1. The message data is generally not authenticated, every local process can claim to be Apache under PID 4711, and syslog will believe that and store it on disk.
+2. The data logged is very free-form. Automated log-analyzers need to parse human language strings to a) identify message types, and b) parse parameters from them. This results in regex horrors, and a steady need to play catch-up with upstream developers who might tweak the human language log strings in new versions of their software. Effectively, in a away, in order not to break user-applied regular expressions all log messages become ABI of the software generating them, which is usually not intended by the developer.
+3. The timestamps generally do not carry timezone information, even though some newer specifications define support for it.
+4. Syslog is only one of many log systems on local machines. Separate logs are kept for utmp/wtmp, lastlog, audit, kernel logs, firmware logs, and a multitude of application-specific log formats. This is not only unnecessarily complex, but also hides the relation between the log entries in the various subsystems.
+5. Reading log files is simple but very inefficient. Many key log operations have a complexity of O(n). Indexing is generally not available.
+6. The syslog network protocol is very simple, but also very limited. Since it generally supports only a push transfer model, and does not employ store-and-forward, problems such as Thundering Herd or packet loss severely hamper its use.
+7. Log files are easily manipulable by attackers, providing easy ways to hide attack information from the administrator
+8. Access control is non-existent. Unless manually scripted by the administrator a user either gets full access to the log files, or no access at all.
+9. The meta data stored for log entries is limited, and lacking key bits of information, such as service name, audit session or monotonic timestamps.
+10. Automatic rotation of log files is available, but less than ideal in most implementations: instead of watching disk usage continuously to enforce disk usage limits rotation is only attempted in fixed time intervals, thus leaving the door open to many DoS attacks.
+11. Rate limiting is available in some implementations, however, generally does not take the disk usage or service assignment into account, which is highly advisable.
+12. Compression in the log structure on disk is generally available but usually only as effect of rotation and has a negative effect on the already bad complexity behaviour of many key log operations.
+13. Classic Syslog traditionally is not useful to handle early boot or late shutdown logging, even though recent improvements (for example in systemd) made this work.
+14. Binary data cannot be logged, which in some cases is essential (Examples: ATA SMART blobs or SCSI sense data, firmware dumps)
 
 Many of these issues have become very visible in the recent past. For example, intrusion involved in log file manipulation which can usually only detected by chance. In addition, due to the limitations of syslog, at this point in time users frequently have to rely on closed source components to make sense of the gathered logging data, and make access to it efficient.
 
