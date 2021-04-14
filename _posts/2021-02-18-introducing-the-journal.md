@@ -98,6 +98,8 @@ Logging is a crucial part of service management. On Unix, most running services 
 
 日志是服务管理的关键部分。在 Unix 上，大多数正在运行的服务连接到 syslog 以写入日志消息。在 systemd 中，我们将日志构建到服务管理的核心：从 fedora16 开始，所有启动的服务都自动连接到 syslog，并带有它们的标准输出和错误输出。无论服务是在早期引导时启动还是在正常操作期间启动，其输出最终都会出现在系统日志中。因此，日志记录非常重要，它需要配置来避免它，并且从 opt-in 变为 opt-out。网络效应是一个更加透明、可调试和可审计的系统。透明度不再只是知识渊博者的选择，而是默认的选择。 ??
 
+[opt-in/out 是啥](https://termly.io/resources/articles/opt-in-vs-opt-out/)
+
 
 During the development of systemd the limitations of syslog became more and more apparent to us. For example: one very important feature we want to add to ease the administrator’s work is showing the last 10 lines (or so) of log output of a service next to the general service information shown by “systemctl status foo.service”. Implementing this correctly for classic syslog is prohibitively inefficient, unreliable and insecure: a linear search through all log files (which might involve decompressing them on-the-fly) is required, and the data stored might be manipulated, and cannot easily (and without races) be mapped to the systemd service name and runtime.
 
@@ -138,16 +140,48 @@ Of course, when designing a new core component of the OS like this, a few design
     健壮性：日志生成的数据文件应该可以直接供管理员访问，这在使用 “scp” 或 “rsync” 等工具复制到不同的主机时非常有用。复制不完整时应妥善处理。日志浏览客户端应该能在没有日志守护进程的情况下工作。
 
 4. Portable: journal files should be usable across the full range of Linux systems, regardless which CPU or endianess is used. Journal files generated on an embedded ARM system should be viewable on an x86 desktop, as if it had been generated locally.
+
+    可移植性：日志文件应该可以在所有 Linux 系统中使用，无论使用哪个 CPU 或编码。在嵌入式 ARM 系统上生成的日志文件应该可以在 x86 桌面上查看，就好像它是本地生成的一样。
+
 5. Performance: journal operations for appending and browsing should be fast in terms of complexity. O(log n) or better is highly advisable, in order to provide for organization-wide log monitoring with good performance
+
+    性能：添加和浏览的日志在复杂性方面应该是快速的。最好是 O（logn）或更高，以便在日志监控时提供具有良好性能。
+
 6. Integration: the journal should be closely integrated with the rest of the system, so that logging is so basic for a service, that it would need to opt-out of it in order to avoid it. Logging is a core responsibility for a service manager, and it should be integrated with it reflecting that.
+
+    集成：日志应该与系统的其余部分紧密集成，日志记录对于服务来说是非常基本的，因此需要 opt-out 来禁用它。日志记录是服务管理器的核心职责，应该与之集成。
+
 7. Minimal Footprint: journal data files should be small in disk size, especially in the light that the amount of data generated might be substantially bigger than on classic syslog.
+
+    最小占用空间：日志数据文件的磁盘大小应该很小，特别是考虑到生成的数据量可能比经典 syslog 上的数据量大得多。
+
 8. General Purpose Event Storage: the journal should be useful to store any kind of journal entry, regardless of its format, its meta data or size.
+
+    通用事件存储：journal 应该可以帮助存储任何类型的日志，无论其格式、元数据或大小如何。
+
 9. Unification: the numerous different logging technologies should be unified so that all loggable events end up in the same data store, so that global context of the journal entries is stored and available later. e.g. a firmware entry is often followed by a kernel entry, and ultimately a userspace entry. It is key that the relation between the three is not lost when stored on disk.
+
+    统一：海量不同的日志记录技术应该是统一的，以便所有可记录的事件最终都在同一个数据存储中，这样日志数据的全局上下文被存储下来并在以后可用。硬件记录后面通常跟一个内核记录，最后是一个用户空间记录。存储在磁盘上时，三者之间的关系不丢失非常关键。
+
 10. Base for Higher Level Tools: the journal should provide a generally useful API which can be used by health monitors, recovery tools, crash report generators and other higher level tools to access the logged journal data.
+
+    高级工具的基础：日志应该提供一个通常有用的 API，可以被健康监视器、恢复工具、崩溃报告生成器和其他高级工具用来访问日志数据。
+
 11. Scalability: the same way as Linux scales from embedded machines to super computers and clusters, the journal should scale, too. Logging is key when developing embedded devices, and also essential at the other end of the spectrum, for maintaining clusters. The journal needs to focus on generalizing the common use patterns while catering for the specific differences, and staying minimal in footprint.
+
+    可伸缩性：就像 Linux 从嵌入式计算机扩展到超级计算机和集群一样，journal 也应该扩展。在开发嵌入式设备时，日志记录是关键，在另一端，集群的维护中，日志记录也是必不可少的。journal 需要概括常见的使用模式，同时照顾到具体的差异，并占用最小的空间。
+
 12. Universality: as a basic building block of the OS the journal should be universal enough and extensible to cater for application-specific needs. The format needs to be extensible, and APIs need to be available.
+
+    通用性：作为操作系统的基本构建块，日志应该具有足够的通用性和可扩展性，以满足特定应用程序的需要。格式需要是可扩展的，并且有 api 可用。
+
 13. Clustering & Network: Today computers seldom work in isolation. It is crucial that logging caters for that and journal files and utilities are from the ground on developed to support big multi-host installations.
+
+    集群和网络：今天的计算机很少单独工作。 It is crucial that logging caters for that and journal files and utilities are from the ground on developed to support big multi-host installations.
+
 14. Security: Journal files should be authenticated to make undetected manipulation impossible.
+
+    安全性：日志文件应该经过身份验证，杜绝未认证的操作。
 
 So much about the design goals, here’s an high-level technical overview of what we came up with to implement all this and how the new system works:
 
