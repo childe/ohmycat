@@ -26,26 +26,68 @@ syslog 守护进程的目的是 —— 顾名思义 —— 记录系统日志。
 
 The fact that syslog enforces very little format of the log messages makes it both very versatile and powerful, but at the same time is also one of its biggest drawbacks. Since no structured format is defined, parsing and processing of log messages systematically is messy: the context information the generator of the messages knew is lost during the transformation into terse, lossy human language, and most log analyzers then try to parse the human language again in an attempt to reconstruct the context.
 
-syslog 只强制规范很少的日志消息格式，这让它功能强大，但同时也是它最大的缺点之一。由于没有定义结构化格式，系统地解析和处理日志消息是混乱的：消息生成器所知道的上下文信息在转换为简洁、有损的人类语言的过程中丢失了，很多日志分析器又在随后尝试再次解析人类语言，试图重建上下文。
+syslog 只强制规范很少的日志消息格式，这让它功能强大，但同时也是它最大的缺点之一。由于没有定义结构化格式，系统地解析和处理日志消息是混乱的：消息生成器所知道的上下文信息在转换为简洁、有损的人类语言的过程中丢失了，很多日志分析器又在随后尝试再次解析人类语言，试图重建上下文。??
 
 Syslog has been around for ~30 years, due to its simplicity and ubiquitousness it is an invaluable tool for administrators. However, the number of limitations are substantial, and over time they have started to be serious problems:
 
 Syslog 已经存在了约 30 年，由于它的简单性和普遍性，它对于管理员来说是一个非常宝贵的工具。然而，限制也是很明显的，随着时间的推移，它们已经开始成为严重的问题：
 
 1. The message data is generally not authenticated, every local process can claim to be Apache under PID 4711, and syslog will believe that and store it on disk.
+
+    消息数据通常没有经过身份验证，每个本地进程都可以声称自己是 Apache，PID 是 4711 ，syslog 会相信这一点并将其存储在磁盘上。
+
 2. The data logged is very free-form. Automated log-analyzers need to parse human language strings to a) identify message types, and b) parse parameters from them. This results in regex horrors, and a steady need to play catch-up with upstream developers who might tweak the human language log strings in new versions of their software. Effectively, in a away, in order not to break user-applied regular expressions all log messages become ABI of the software generating them, which is usually not intended by the developer.
+
+    记录的数据非常自由。自动日志分析器需要解析人类语言字符串，以便 a）识别消息类型，b）解析其中的参数。这导致了正则解析的可怕消耗，并且需要不断地赶上上游开发人员，他们可能会在新版本的软件中调整日志格式。实际上，为了不破坏用户应用的正则表达式，所有日志消息都成为生成它们的软件的 [ABI](https://en.wikipedia.org/wiki/Application_binary_interface)，这通常不是开发人员想要的。 ??
+
 3. The timestamps generally do not carry timezone information, even though some newer specifications define support for it.
+
+    时间戳通常不携带时区信息，即使一些较新的规范定义了对它的支持。
+
 4. Syslog is only one of many log systems on local machines. Separate logs are kept for utmp/wtmp, lastlog, audit, kernel logs, firmware logs, and a multitude of application-specific log formats. This is not only unnecessarily complex, but also hides the relation between the log entries in the various subsystems.
+
+    Syslog 只是本地计算机上许多日志系统中的一个。为 utmp/wtmp、lastlog、audit、内核日志、固件日志和多种特定于应用程序的日志格式保留单独的日志，这不仅是不必要的复杂，而且隐藏了各个子系统中日志条目之间的关系。 ??
+
 5. Reading log files is simple but very inefficient. Many key log operations have a complexity of O(n). Indexing is generally not available.
+
+    读取日志文件很简单，但效率很低。许多关键日志操作的复杂性为 O（n）。一般没有索引可用。
+
 6. The syslog network protocol is very simple, but also very limited. Since it generally supports only a push transfer model, and does not employ store-and-forward, problems such as Thundering Herd or packet loss severely hamper its use.
+
+    syslog 网络协议非常简单，但也非常有限。由于它通常只支持推送传输模型，并且不使用存储转发，诸如 Thundering Herd 问题或数据包丢失等问题严重阻碍了它的使用。
+
 7. Log files are easily manipulable by attackers, providing easy ways to hide attack information from the administrator
+
+    日志文件很容易被攻击者操作，而且很容易向管理员隐藏攻击信息。
+
 8. Access control is non-existent. Unless manually scripted by the administrator a user either gets full access to the log files, or no access at all.
+
+    没有权限控制。除非管理员手动编写脚本，否则用户要么可以完全访问日志文件，要么根本无法访问。
+
 9. The meta data stored for log entries is limited, and lacking key bits of information, such as service name, audit session or monotonic timestamps.
+
+    为日志条目存储的元数据是有限的，并且缺少关键信息位，例如服务名称、审计session或单调的时间戳。
+
 10. Automatic rotation of log files is available, but less than ideal in most implementations: instead of watching disk usage continuously to enforce disk usage limits rotation is only attempted in fixed time intervals, thus leaving the door open to many DoS attacks.
+
+    日志文件的自动轮转是可用的，但在大多数实现中并不理想：轮换只是在固定的时间间隔内尝试的，而不是不断地观察磁盘使用情况以强制执行磁盘使用限制，从而使许多 DoS 攻击的大门敞开。
+
 11. Rate limiting is available in some implementations, however, generally does not take the disk usage or service assignment into account, which is highly advisable.
+
+    速率限制在某些实现中是可用的，但是，通常不考虑磁盘使用或服务分配，而这又是非常有用的。
+
 12. Compression in the log structure on disk is generally available but usually only as effect of rotation and has a negative effect on the already bad complexity behaviour of many key log operations.
+
+    磁盘上日志结构中的压缩通常是可用的，但通常仅是和轮转一起工作。并且许多关键日志操作本身已经够复杂了，压缩更加雪上加霜。
+
 13. Classic Syslog traditionally is not useful to handle early boot or late shutdown logging, even though recent improvements (for example in systemd) made this work.
+
+    传统上，经典的 Syslog 对于处理早期启动或后期关机日志记录是没有用的，尽管最近的改进（例如 systemd）使这一点得以实现。
+
 14. Binary data cannot be logged, which in some cases is essential (Examples: ATA SMART blobs or SCSI sense data, firmware dumps)
+
+    无法记录二进制数据，这在某些情况下是必需的（例如：ATA 智能 Blob 或 SCSI 检测数据、固件转储）
+
 
 Many of these issues have become very visible in the recent past. For example, intrusion involved in log file manipulation which can usually only detected by chance. In addition, due to the limitations of syslog, at this point in time users frequently have to rely on closed source components to make sense of the gathered logging data, and make access to it efficient.
 
