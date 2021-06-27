@@ -14,6 +14,8 @@ layout: post
 
 然后去翻了 libcurl 的代码, 他是使用[另外一个叫 ARES 的库](https://github.com/c-ares/c-ares)去做的 DNS 解析. 在 ARES 中看到有解析 ipv6 的时候, 使用了多线程(细节有些记不清了). 然后搜索文章, 就看到了下面这篇文章: 为什么我们要分开请求 A 和 AAAA DNS记录?
 
+<!--more-->
+
 **[原文地址]** [Why Should We Separate A and AAAA DNS Queries?](https://blogs.infoblox.com/ipv6-coe/why-should-we-separate-a-and-aaaa-dns-queries/)
 
 Imagine what it was like to be an ancient mariner navigating the ocean blue at night using nothing more than stars, a sextant and a marine chronometer.  Thankfully, navigating the Internet is not as daunting.  The method that networked devices use to find their way around the digital ocean is the Domain Name System (DNS), which translates human-readable host and domain names into numerical IP addresses (and vice versa).

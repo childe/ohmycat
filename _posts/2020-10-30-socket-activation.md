@@ -17,6 +17,8 @@ In the original blog story about systemd I tried to explain why socket activatio
 
 在关于 systemd 的最开始的博客故事中，我试图解释为什么 socket activation 是一种神奇的服务创建技术。让我们在这里再介绍一下背景。
 
+<!--more-->
+
 The basic idea of socket activation is not new. The inetd superserver was a standard component of most Linux and Unix systems since time began: instead of spawning all local Internet services already at boot, the superserver would listen on behalf of the services and whenever a connection would come in an instance of the respective service would be spawned. This allowed relatively weak machines with few resources to offer a big variety of services at the same time. However it quickly got a reputation for being somewhat slow: since daemons would be spawned for each incoming connection a lot of time was spent on forking and initialization of the services -- once for each connection, instead of once for them all.
 
 Socket Activation 的基本思想并不是新的。inetd 从一开始就是大多数 Linux 和 Unix 系统的一个标准组件：它不在系统启动时生成所有本地 Internet 服务，而是代表服务进行监听，每当连接到来时，都会生成相应服务的实例。这使得资源较少的相对较弱的机器能够同时提供各种各样的服务。然而，它很快就以速度慢而闻名：因为每个传入的连接都会产生守护进程，所以在服务创建和初始化上花费了大量时间 —— 每个新的连接都会创建和初始化一次，而不是所有连接只创建一次。

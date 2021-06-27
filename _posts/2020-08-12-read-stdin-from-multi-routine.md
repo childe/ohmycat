@@ -7,6 +7,8 @@ title: 多线程一起读stdin
 
 一个进程里面开两个线程读取 stdin , 会是哪一个能读到呢? 来测下看.
 
+<!--more-->
+
 ```
 package main
 
