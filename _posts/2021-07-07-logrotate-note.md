@@ -32,3 +32,7 @@ prerotate
    sh -c "[[ ! $1 =~ mongodb.log$ ]]"
 endscript
 ```
+
+**更新**
+
+这样会有问题的！后面的 `/var/log*.log` 配置项完全失败了。
