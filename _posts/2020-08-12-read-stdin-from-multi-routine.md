@@ -113,3 +113,13 @@ SSH 登陆到一台机器，tty 看到他的是 pty 是 /dev/pts/0。我就在�
 感觉 sshd 从 master 读到这个输入之后，并不是写给了 bash，因为看起来只是单纯的展示在屏幕上。这样也说的通：为啥 cat 没有拿到这些数据。
 
 但**单纯的展示在屏幕上**是怎么一回事呢？？
+
+
+## 最后简单说一下 script.c 里面的逻辑
+
+1. open(/dev/ptmx)，FD 就是 master，同时还会在 /dev/pts 下面生成一个文件，供后面做为 slave 使用。
+2. fork
+3. parent process 里面：1. 读取 stdin 数据，写到 master fd（这样 slave 就能从另外一端读取这些数据） 2. 读取 master 里面的数据，写到文件和 stdout。
+4. child process 里面： close(0), open( 步骤1里面生成的 slave file); dup(0,1); dup(0,2); exec(bash -i) 。这样一来，用户在屏幕输入的数据就从步骤 3.1 里面到了步骤4里面的 slave，进而被  bash -i 读取到。输出到 fd 1 的数据也会被步骤 3.2 读取到
+
+另外，在 fork 前后需要对 tty 进行设置（stty --help)。 tty 在上面的数据流输入输出扮演什么的角色也不太清楚。
