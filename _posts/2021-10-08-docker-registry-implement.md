@@ -37,3 +37,7 @@ Docker-Content-Digest: <digest>
 文档中说 `The Location header will contain the registry URL to access the accepted layer file`。 
 
 但实际上，docker cli 不会通过这个返回的 Location 来确认 Layer。而是通过 `HEAD /v2/liujia/test/blobs/sha256:c74f8866df097496217c9f15efe8f8d3db05d19d678a02d01cc7eaed520bb136 HTTP/1.1` 来确认的。就是说，不管Location 返回什么，都是通过之前的 digest 来做 HEAD 请求确认 Layer 信息的。
+
+3. Get Manifest
+
+返回的时候，需要解析 manifest 文件里面的 mediaType 作为 content-type 返回。
