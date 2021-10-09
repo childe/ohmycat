@@ -4,7 +4,7 @@ date: 2021-10-08T11:35:00+0800
 
 ---
 
-对照[https://docs.docker.com/registry/spec/api/#pushing-an-image](https://docs.docker.com/registry/spec/api/#pushing-an-image)，使用 Flask 做一下实现。但发现有两处和文件不太符合的地方。
+对照[https://docs.docker.com/registry/spec/api/#pushing-an-image](https://docs.docker.com/registry/spec/api/#pushing-an-image)，使用 Flask 做一下实现。但发现有两处和文档不太符合的地方。
 
 1. Chunked Upload
 
