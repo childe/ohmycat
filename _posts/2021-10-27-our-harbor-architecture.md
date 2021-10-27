@@ -30,7 +30,7 @@ Harbor 做镜像复制期间，用户在 Web 可以看到这个镜像，但如�
 
 ## 架构图
 
-[!架构图](/images/harbor-dr.png)
+[!架构图](/ohmycat/images/harbor-dr.png)
 
 ## 一个问题
 
