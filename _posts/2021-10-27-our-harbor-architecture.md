@@ -30,9 +30,11 @@ Harbor 做镜像复制期间，用户在 Web 可以看到这个镜像，但如�
 
 ## 架构图
 
-[!架构图](/ohmycat/images/harbor-dr.png)
+![架构图](https://childe.github.io/ohmycat/images/harbor-dr.png)
 
 ## 一个问题
+
+在 [https://childe.github.io/ohmycat//2021/10/26/one-small-harbor-issue.html](https://childe.github.io/ohmycat//2021/10/26/one-small-harbor-issue.html) 里面也有记录。
 
 manifest 文件是一个 json 文件，可能因为字典结构 Key 的无序（猜测，还未去证实），导致文件内容虽然一样，但 Sha256 不一样。
 
