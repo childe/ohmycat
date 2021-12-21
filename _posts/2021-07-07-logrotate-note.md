@@ -23,7 +23,9 @@ endscript
 
 ## 2
 
-如果有两个 Pattern 有重合，比如说 `/var/log/*.log`, 和 `/var/log/redis.log` , Logrotate 不会处理两次，前面那个配置生效。后面的配置会被忽略掉。这里要小心。
+如果有两个 Pattern 有重合，比如说 `/var/log/*.log`, 和 `/var/log/redis.log` , Logrotate 不会处理两次，前面那个配置生效。后面的配置会被完全忽略掉。这里要小心。
+
+补充说明一下，如果一个文件在两个 pattern 里面都匹配到，第二个配置被完全忽略掉，而不仅仅是这个文件被忽略。
 
 可以使用这个规则来过滤一些日志。 比如说 `/var/log/redis.log` 不想处理，可以加一个 prerotate 过滤掉
 
