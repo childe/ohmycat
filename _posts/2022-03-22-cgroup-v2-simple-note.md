@@ -5,6 +5,10 @@ title: cgroup v2 学习笔记简记
 
 ---
 
+参考资料
+
+- [Control Group v2 — The Linux Kernel documentation](https://www.kernel.org/doc/html/v5.10/admin-guide/cgroup-v2.html)
+- [中文翻译](https://arthurchiao.art/blog/cgroupv2-zh)
 
 ## 启用 cgroup-v2
 
