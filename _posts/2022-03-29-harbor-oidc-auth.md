@@ -71,21 +71,21 @@ Harbor 中使用 OIDC 的地方，大的来说有两个。一个是 Web 页面�
 
 ## docker login 流程
 
-从 docker client 方面讲：
+从 docker client 方面讲，一共会有 3 个请求。
 
 1. docker cli 访问 https://HUB.COM/v2/
 2. hub 服务端返回 401，同时，Header 里面包含 `Www-Authenticate: Bearer realm="https://TOKEN.COM/service/token",service="harbor-registry"`
-3. docker cli 使用 Basic Auth 去 `https://TOKEN.COM/service/token` 请求一个 Token
-4. 拿 Token 再次访问 `https://HUB.COM/v2/`
+3. docker cli 使用 Basic Auth 去 `https://TOKEN.COM/service/token` 请求一个 Token (harbor 里，TOKEN.COM 其实和 HUB.COM 是一样的)
+4. 拿 Token 构造一个 `Authenticate: Bearer` Header，再次访问 `https://HUB.COM/v2/`
 
 那从 harbor 方面看呢：
-1. 处理 BasicAuth 来取 Token 的请求时，使用 oidcCli 来做验证
-    1. 到数据库里面取 oidc\_user 的密码，使用 Key Decode 之后，看和用户输入是不是匹配
-    2. 取 oidc\_user 里面的 Token 值
-    3. Decode Token 数据，获得用户信息，比如用户名等。这一步会对 Token 做合法性的验证(下面详说)。
-    4. 调用前文所说的 userinfo\_endpoint，获取用户信息
-2. 处理带 Token /v2/ 请求时：使用 v2Token。拿 Header 里面的 Bearer 值，用来 Decode 成 Token。这个 Token 里面是包括用户信息的，包括用户名。这个时候用户名会存到 Request Context 里面。(看代码中，这一步骤是不会做 Token 验证的。默认他是合法的。不太确定了。）
-
+1. 处理 Basic Auth 来取 Token 的请求时，使用 oidcCli 来做身份验证。步骤如下，任何一步失败，都会返回 401
+    1. 到数据库里面取 oidc\_user 的密码，使用 Private Key 解码之后，看能否匹配用户的输入
+    2. 取 oidc\_user 里面的 token 值
+    3. 解码 token 数据，获得用户信息(localUserInfo)，比如用户名等。这一步会对 Token 做合法性的验证(下面详说)。
+    4. 调用前文所说的 userinfo\_endpoint，获取用户信息(remoteUserInfo)
+    5. 合并上面的 localUserInfo remoteUserInfo 数据（这一步对验证来说无关紧要）
+2. 处理带 Token 的 /v2/ 请求时，使用 v2Token 模块做验证。拿 Header 里面的 Bearer 值，Decode 生成 Token。这个 Token 里面是包括用户信息的，比如用户名。这个时候用户名会存到 Request Context 里面。(看代码中，这一步骤是不会做 Token 验证的。默认他是合法的。不太确定了。）
 
 ## Token 验证
 
