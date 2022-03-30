@@ -19,7 +19,7 @@ endscript
 
 > error: error running non-shared prerotate script for XXX
 
-这个其实不是错误，是说 prerotate 脚本 return code 不是0，也就是说会跑过这个日志文件的处理。
+这个其实不是错误，是说 prerotate 脚本 return code 不是0，也就是说会跳过这个日志文件的处理。
 
 ## 2
 
