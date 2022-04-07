@@ -43,6 +43,8 @@ Docker-Content-Digest: <digest>
 返回的时候，需要解析 manifest 文件里面的 mediaType 作为 content-type 返回。
 
 
+## 代码
+
 模拟实现 registry 的 python+flask 代码如下。
 
 ```py
