@@ -1,21 +1,22 @@
+theme: minima
+
 # Site settings
 title: 派猴子来的救兵
 email: heychilde@gmail.com
-description: 
+description:
 
 baseurl: "/ohmycat/"
 url: "https://childe.github.io"
-# twitter_username: jekyllrb
 github_username:  childe
 
 excerpt_separator: <!--more-->
 
-# Build settings
-markdown: kramdown
-extensions: [fenced_code_blocks]
 
-# paging settings
-paginate: 10
+google_analytics: UA-56892769-2
 
-gems :
-  - jekyll-paginate
+minima:
+  skin: solarized
+  date_format: "%-d %b, %Y"
+
+  header_pages:
+    - about.md
