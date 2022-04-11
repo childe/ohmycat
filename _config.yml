@@ -23,3 +23,9 @@ minima:
 
   header_pages:
     - about.md
+  social_links:
+    github: childe
+
+author:
+  name: childe
+  email: "rmself@qq.com"
