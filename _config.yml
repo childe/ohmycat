@@ -1,4 +1,5 @@
-theme: minima
+#theme: minima
+remote_theme: jekyll/minima
 
 # Site settings
 title: 派猴子来的救兵
@@ -11,6 +12,8 @@ github_username:  childe
 
 excerpt_separator: <!--more-->
 
+plugins:
+- jekyll-remote-theme
 
 google_analytics: UA-56892769-2
 
