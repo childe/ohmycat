@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2021-07-07T17:36:00+0800
 title: logrotate 笔记一二
 

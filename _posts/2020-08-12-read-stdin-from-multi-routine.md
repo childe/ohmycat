@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2020-08-12T11:05:36+0800
 title: 多线程一起读stdin
 

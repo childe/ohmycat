@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2021-07-03T15:03:14+0800
 title: docker registry 更换后端存储后 Pull/Push 失败
 

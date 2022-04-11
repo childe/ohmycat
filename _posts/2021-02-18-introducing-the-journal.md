@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2021-02-18T13:52:49+0800
 title: Introducing the Journal
 

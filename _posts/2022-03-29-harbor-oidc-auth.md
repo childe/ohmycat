@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2022-03-29T11:10:15+0800
 title: harbor 中 oidc 认证的一些笔记
 

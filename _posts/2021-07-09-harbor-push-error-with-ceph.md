@@ -1,5 +1,6 @@
 ---
 
+layout: post
 date: 2021-07-09T13:06:35+0800
 title: harbor push image 时偶尔出错的定位
 
