@@ -7,11 +7,9 @@ layout: post
 
 Proxy effect in dockerd(docker daemon) is different from that in docker cli.
 
-Proxy setting in dockerd acts when dealing with registry, 
+Proxy setting in dockerd acts when dealing with registry, such as `docker pull push login`.
 
-and proxy setting in docker cli acts when do `docker pull push login`.
-
-and also command in dockerfile when doing `docker build` use proxy setting in docker cli automatically (not in environment way).
+Command in dockerfile when doing `docker build` and `docker run` use proxy setting in docker cli (NOT automatically in environment way, see details below).
 
 <!--more-->
 
