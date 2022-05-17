@@ -3,3 +3,4 @@ _site
 _posts/*.tmp
 /.jekyll-cache/
 .jekyll-metadata
+.DS_Store
