@@ -15,6 +15,8 @@ show_excerpts: true
 paginate: 10
 paginate_path: "/page:num/"
 
+lang: zh-cmn-Hans
+
 
 plugins:
 - jekyll-remote-theme
