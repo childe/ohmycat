@@ -11,9 +11,14 @@ url: "https://ourcat.day"
 github_username:  childe
 
 excerpt_separator: <!--more-->
+show_excerpts: true
+paginate: 10
+paginate_path: "/page:num/"
+
 
 plugins:
 - jekyll-remote-theme
+- jekyll-paginate
 
 google_analytics: UA-56892769-2
 
