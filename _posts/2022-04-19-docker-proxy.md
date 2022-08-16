@@ -104,3 +104,11 @@ If your container needs to use an HTTP, HTTPS, or FTP proxy server, you can conf
 
 -  [https://docs.docker.com/config/daemon/systemd/](https://docs.docker.com/config/daemon/systemd/)
 - [https://docs.docker.com/network/proxy/](https://docs.docker.com/network/proxy/)
+
+## 补记
+
+在公司环境服务器，网络是不通外网的，Build 镜像的时候没办法 pip install 等。
+
+可以在 ~/.docker/config.json 里面配置好代理再 build。
+
+build 之后可以再把代理 取消，否则 docker run 的时候会带上代理，访问公司内部地址可能就会有问题了。
