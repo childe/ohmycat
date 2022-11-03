@@ -1,7 +1,7 @@
 ---
 
 date: 2022-11-02T23:25:53+0800
-title: [译]Linux下 OOMKiller 什么时候被触发
+title: '[译]Linux下 OOMKiller 什么时候被触发'
 layout: post
 
 ---
