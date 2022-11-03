@@ -21,6 +21,8 @@ layout: post
 
 (比如说，内核申请连续大段内存页失败，是不会触发的，参考[Decoding the Linux kernel's page allocation failure messages](https://utcc.utoronto.ca/~cks/space/blog/linux/DecodingPageAllocFailures)。如果申请的连续内存小于 等于 30KB 才会触发。`git blame` 显示从2007年就开始是这样的了。)
 
+<!--more-->
+
 
 据我所知，OOM Killer 会因为申请同一块内存失败而多次触发。比如说，申请这块内存失败导致 OOM Killer 释放了一些内存。接下来的申请同一块内存又失败了（可能释放的内存已经被别的进程用掉了），会再次触发 OOM Killer。而且据我所知，OOM Killer 也允许连续的多次触发。并没有什么两次 OOM Killer 之间需要间隔多少时间的限制。只要内存不够用了，就会触发，就这么简单。
 
