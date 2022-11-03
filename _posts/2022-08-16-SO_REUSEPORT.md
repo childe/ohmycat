@@ -8,11 +8,11 @@ layout: post
 
 原文 [The SO_REUSEPORT socket option [LWN.net]](https://lwn.net/Articles/542629/)
 
-<!--more-->
-
 One of the features merged in the 3.9 development cycle was TCP and UDP support for the SO_REUSEPORT socket option; that support was implemented in a series of patches by Tom Herbert. The new socket option allows multiple sockets on the same host to bind to the same port, and is intended to improve the performance of multithreaded network server applications running on top of multicore systems.
 
 Linux 3.9 版本合并了一个 SO_REUSEPORT 的特性。可以在 TCP 和 UDP 的套接字上面配置 SO_REUSEPORT 这个选项；这项支持是 Tom Herbert 在一系列的补丁中实现的。这个新的套接字参数可以允许一台机器上面将多个套接字绑定在同一个端口上面，目的是为了提高多核机器上面的多线程网络服务应用的性能。
+
+<!--more-->
 
 The basic concept of SO_REUSEPORT is simple enough. Multiple servers (processes or threads) can bind to the same port if they each set the option as follows:
 
