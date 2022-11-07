@@ -26,6 +26,8 @@ layout: post
 
 据我所知，OOM Killer 会因为申请同一块内存失败而多次触发。比如说，申请这块内存失败导致 OOM Killer 释放了一些内存。接下来的申请同一块内存又失败了（可能释放的内存已经被别的进程用掉了），会再次触发 OOM Killer。而且据我所知，OOM Killer 也允许连续的多次触发。并没有什么两次 OOM Killer 之间需要间隔多少时间的限制。只要内存不够用了，就会触发，就这么简单。
 
+*注1 这和另外一篇文章说的有差异。[https://www.kernel.org/doc/gorman/html/understand/understand016.html](https://www.kernel.org/doc/gorman/html/understand/understand016.html)这里说 `Has it been more than 5 seconds since the last failure? If yes, not OOM`*
+
 (当然了，你希望一次 OOM Killer 可以释放一大堆内存，这也是 OOM Killer 存在的意义)
 
 
