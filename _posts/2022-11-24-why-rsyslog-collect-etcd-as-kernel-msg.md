@@ -76,3 +76,7 @@ ETCD 在 journald 中的一条日志如下：
 粗看下来，是因为 etcd  使用一些库记录日志到  journald 的时候，没有加 FACILITY 字段。
 
 rsyslog 采集日志的时候，会通过 PRIORITY >> 3 的方式计算 FACILITY。计算结果为0，认为FACILITY 是 kernel。
+
+Rsyslog 的一些 const value: [https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L202](https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L202)
+
+Rsyslog 计算 FACILITY 的宏 [https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L251](https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L251)
