@@ -1,7 +1,7 @@
 ---
 
 date: 2022-11-24T15:52:56+0800
-title: 为什么 rsyslog 把 etcd 日志采集到了 kernel.log
+title: '为什么 rsyslog 把 etcd 日志采集到了 kernel.log'
 layout: post
 
 ---
