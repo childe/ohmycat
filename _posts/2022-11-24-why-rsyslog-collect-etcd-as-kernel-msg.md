@@ -79,4 +79,25 @@ rsyslog 采集日志的时候，会通过 PRIORITY >> 3 的方式计算 FACILITY
 
 Rsyslog 的一些 const value: [https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L202](https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L202)
 
+```c
+#define	LOG_KERN	(0<<3)	/* kernel messages */
+#define	LOG_USER	(1<<3)	/* random user-level messages */
+#define	LOG_MAIL	(2<<3)	/* mail system */
+#define	LOG_DAEMON	(3<<3)	/* system daemons */
+#define	LOG_AUTH	(4<<3)	/* security/authorization messages */
+#define	LOG_SYSLOG	(5<<3)	/* messages generated internally by syslogd */
+#define	LOG_LPR		(6<<3)	/* line printer subsystem */
+#define	LOG_NEWS	(7<<3)	/* network news subsystem */
+#define	LOG_UUCP	(8<<3)	/* UUCP subsystem */
+```
+
+
 Rsyslog 计算 FACILITY 的宏 [https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L251](https://github.com/rsyslog/rsyslog/blob/d083a2a2c20df6852a53e45f1e7a3f47679236d6/runtime/rsyslog.h#L251)
+
+```c
+pri2fac(const syslog_pri_t pri)
+{
+	unsigned fac = pri >> 3;
+	return (fac > 23) ? LOG_FAC_INVLD : fac;
+}
+```
