@@ -28,18 +28,6 @@ endscript
 
 补充说明一下，如果一个文件在两个 pattern 里面都匹配到，第二个配置被完全忽略掉，而不仅仅是这个文件被忽略。
 
-可以使用这个规则来过滤一些日志。 比如说 `/var/log/redis.log` 不想处理，可以加一个 prerotate 过滤掉
-
-```
-prerotate
-   sh -c "[[ ! $1 =~ mongodb.log$ ]]"
-endscript
-```
-
-**更新**
-
-这样会有问题的！后面的 `/var/log*.log` 配置项完全失败了。
-
 大概翻看了一下 [logrotate 的代码](https://github.com/logrotate/logrotate/blob/7b65ecda9a22ce1c57207e38163e20a69b95794b/config.c#L1847)，逻辑应该是这样的:
 
 `/var/log/*.log` 称为一个 entry，每一个 entry，要遍历符合的所有日志，然后和前面的所有 entry 的所有日志对比，如果有一样的，就报 `duplicate log entry` 这个错误，并完全忽略这个 entry，也就是说，这个 entry 里面的所有日志都会跳过。
