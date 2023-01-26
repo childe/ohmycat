@@ -2,7 +2,7 @@
 
 layout: post
 title: 记一个 Harbor 中的小问题 -- get-manifest header-content-type 变化
-date: 2021-10-27 00:08:07 +0800
+date: 2021-10-27T10:08:07+0800
 
 ---
 
