@@ -2,7 +2,7 @@
 
 layout: post
 title: 我们的 Habror 灾备架构
-date: 2021-10-27 11:09:00 +0800
+date: 2021-10-27T11:09:00+0800
 
 ---
 
@@ -44,4 +44,4 @@ Harbor 在做镜像复制的时候，两边的 Ceph 对同一个 Tag 的 Manifes
 
 使用 Tag 去拉数据没问题，因为 Ceph 按 Tag 去找数据都是有的。
 
-我们的场景几乎全部都是使用 Tag 拉数据。问题在于，Harbor 有个逻辑: 先把 Tag 转成 Sha256 再去 Registry 拉数据。就会触发上面的问题了。所以我们把 Harbor 这段代码注释掉了。运行两周，目前无问题。还不太清楚 Harbor 加上这段逻辑的目的。
+我们的场景几乎全部都是使用 Tag 拉数据。问题在于，Harbor 有个逻辑: 先把 Tag 转成 Sha256 再去 Registry 拉数据。就会触发上面的问题了。所以我们把 Harbor 这段代码注释掉了。运行两周，目前无问题。<s>还不太清楚 Harbor 加上这段逻辑的目的</s>。因为 Harbor 使用自己的 Tag 管理机制，也就是先把 Tag 转成 Sha256 再 proxy 到后面的 registry。Harbor 这样做，可能是因为 Harbor 有一个自己的功能：在 Web 上给一个 Image 添加一个 Tag。这个功能的实现只是在 Harbor 数据库里面添加一个记录，并没有在存储这一层添加 Tag 索引。我自己觉得这不是一个好办法，因为他和官方的 Registry 不兼容，也很可能和别的第三方 Registry 不兼容。
