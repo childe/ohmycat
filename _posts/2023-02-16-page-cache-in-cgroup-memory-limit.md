@@ -32,3 +32,11 @@ page cache 会计算到 cgroup limit 里面。
 但内存超的时候，不会直接触发 OOM Killer，而是会清理部分 page cache。
 
 page cache 始终算在第一个使用它的进程（以及对应的 Cgroup）上。
+
+## 清理策略
+
+多提一句，cgroup v2 的清理 page cache 策略应该比 v1 有优化，参考如下：
+
+> Another important topic in cgroup v2, which was unachievable with the previous v1, is a proper way of tracking Page Cache IO writebacks. The v1 can’t understand which memory cgroup generates disk IOPS and therefore, it incorrectly tracks and limits disk operations. Fortunately, the new v2 version fixes these issues. It already provides a bunch of new features which can help with Page Cache writeback.
+
+[https://biriukov.dev/docs/page-cache/6-cgroup-v2-and-page-cache/](https://biriukov.dev/docs/page-cache/6-cgroup-v2-and-page-cache/)
