@@ -1,9 +1,10 @@
 ---
+
 layout: post
 title:  "linux下读取磁盘时缓冲区大小如何影响性能"
 date:   2016-05-05 20:46:16 +0800
 keywords: linux io readahead buffer-size
-categories: linux
+
 ---
 
 从[每次read时的buffer size如何影响性能](http://gitcommit.today/2016/04/20/read-how-buffer-size-effect.html), [每次read时的buffer size如何影响性能2](http://gitcommit.today/2016/04/21/read-how-buffer-size-effect-2.html) 总结来的. 这两篇都是一些当时的想法, 对的, 和错的. 现在总结一下.
