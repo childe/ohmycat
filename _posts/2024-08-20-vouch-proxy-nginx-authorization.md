@@ -91,36 +91,43 @@ upstream healer {
 }
 
 server {
-   listen 8001;
+    access_log  off;
+    listen 8001;
 
-   set $allow 0;
+    set $allow 0;
 
-   if ($request_method = GET) {
-     set $allow 1;
-   }
-   if ($request_method = HEAD) {
-     set $allow 1;
-   }
-   if ($request_method = OPTIONS) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "zhangsan" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "lisi" ) {
-     set $allow 1;
-   }
+    if ($request_method = GET) {
+      set $allow 1;
+    }
+    if ($request_method = HEAD) {
+      set $allow 1;
+    }
+    if ($request_method = OPTIONS) {
+      set $allow 1;
+    }
+    if ($http_x_vouch_user = "zhangsan" ) {
+      set $allow 1;
+    }
+    if ($http_x_vouch_user = "lisi" ) {
+      set $allow 1;
+    }
 
-   if ($allow = 0) {
-     return 403;
-   }
+    if ($allow = 0) {
+      return 403;
+    }
 
-   location / {
-        proxy_pass http://127.0.0.1:8000;
-   }
+    location / {
+         proxy_pass http://127.0.0.1:8000;
+    }
 }
 
 server {
+    log_format  main  '$remote_addr $auth_resp_x_vouch_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for" "$request_body"';
+
+    access_log  /opt/logs/access.log  main;
+
     listen       8080 default_server;
     server_name  app.corp.com;
 
@@ -171,9 +178,6 @@ server {
         auth_request_set $auth_resp_x_vouch_idp_claims_groups $upstream_http_x_vouch_idp_claims_groups;
         auth_request_set $auth_resp_x_vouch_idp_claims_given_name $upstream_http_x_vouch_idp_claims_given_name;
 
-        # used in map
-        auth_request_set $vouch_user $upstream_http_x_vouch_user;
-
         proxy_pass http://healer/;
         proxy_set_header X-Vouch-User $auth_resp_x_vouch_user;
     }
@@ -187,29 +191,6 @@ server {
     location = /50x.html {
         root   /usr/share/nginx/html;
     }
-
-    # proxy the PHP scripts to Apache listening on 127.0.0.1:80
-    #
-    #location ~ \.php$ {
-    #    proxy_pass   http://127.0.0.1;
-    #}
-
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    #location ~ \.php$ {
-    #    root           html;
-    #    fastcgi_pass   127.0.0.1:9000;
-    #    fastcgi_index  index.php;
-    #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
-    #    include        fastcgi_params;
-    #}
-
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    #location ~ /\.ht {
-    #    deny  all;
-    #}
 }
 
 server {
