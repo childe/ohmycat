@@ -101,25 +101,10 @@ server {
    if ($request_method = OPTIONS) {
      set $allow 1;
    }
-   if ($http_x_vouch_user = "jia.liu" ) {
+   if ($http_x_vouch_user = "zhangsan" ) {
      set $allow 1;
    }
-   if ($http_x_vouch_user = "hangfu" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "chen_han" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "lynie" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "yuwh" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "wenhao_li" ) {
-     set $allow 1;
-   }
-   if ($http_x_vouch_user = "xj_ye" ) {
+   if ($http_x_vouch_user = "lisi" ) {
      set $allow 1;
    }
 
