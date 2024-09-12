@@ -140,13 +140,15 @@ line是一个变量名, 随便你叫什么,可以用任何在shell中合法的�
     # This does not work:
     printf 'line 1\ntruncated line 2' | while read -r line; do echo $line; done
     
-    # This does not work either:
+    # This does not work either in bash, but work in zsh:
     printf 'line 1\ntruncated line 2' | while read -r line; do echo "$line"; done; [[ $line ]] && echo -n "$line"
     
     # This works:
     printf 'line 1\ntruncated line 2' | { while read -r line; do echo "$line"; done; [[ $line ]] && echo "$line"; }
 
 第一段显然不会输出最后一行, **但奇怪的是第二行也不会!**, 因为while循环是在一个subshell里面的, subshell里面的变量的生命周期只在subshell里面; 第三段就{}强制把while和后面的判断放在一个subshell里面,就OK了.
+
+注：zsh中，第二行种写法是会输出的。
 
 也可以用下面这样(我觉得挺有意思的)
 
