@@ -54,17 +54,16 @@ new_graph = await merge_subgraph(
 )
 ```
 
-核心是generate_subgraph，来细看一下。
+核心是 generate_subgraph，来细看一下:
 
-初始化一个 Extractor 实例，参数 entity_types 是界面上配置的。
-
-然后调用 [__call__](https://github.com/infiniflow/ragflow/blob/0.18.0/graphrag/general/extractor.py#L89)
+1. 初始化一个 Extractor 实例，参数 entity_types 是界面上配置的。 Extractor 实现了 `__call__` 方法。(Extractor 有两个实现，分别是 GeneralKGExt 和 LightKGExt，前者是通用的，后者是轻量级的，但我感觉好像没有大的区别)
+2. 调用 [\__call__](https://github.com/infiniflow/ragflow/blob/0.18.0/graphrag/general/extractor.py#L89)，返回了所有节点和边，用来创建 subgraph。
 
 `__call__` 里面最核心的是 [\_process_single_content](https://github.com/infiniflow/ragflow/blob/0.18.0/graphrag/general/graph_extractor.py#L100)
 
-(Extractor 有两个实现，分别是 GeneralKGExt 和 LightKGExt，前者是通用的，后者是轻量级的。)
+每一个 chunk 都会调用 \_process_single_content 来处理，并将结果都存储到 out_results 里面。
 
-提取知识图谱是使用 LLM 来做的，我把 prompt 来贴一下：
+\_process_single_content 里面提取知识图谱是使用 LLM 来做的，我把 prompt 来贴一下：
 
 ```
 -Goal-
@@ -177,11 +176,11 @@ LOOP_PROMPT = "It appears some entities may have still been missed. Answer Y if 
 
 对每一个 chunk 做完 \_process_single_content 之后，所有的结果存储到 out_results 里面。
 
-然后是一个工程上的处理吧，我没有细看：
+然后是一个工程上的处理吧，大概如下：
 
 1. 遍历 out_results，将数据放到 maybe_nodes maybe_edges 中。
-2. 然后对 maybe_nodes maybe_edges 做 merge，得到 all_entities_data all_relationships_data，并返回. 也就是 [ents, rels = await ext(doc_id, chunks, callback)](https://github.com/infiniflow/ragflow/blob/0.18.0/graphrag/general/index.py#L148)
-3. 把 ents rels 处理后得到 subgraph，也就是前面提到的两大步骤里面的 generate_subgraph。
+2. 然后对 maybe_nodes maybe_edges 做 merge，得到 all_entities_data all_relationships_data，并返回
+3. 遍历 all_entities_data all_relationships_data ，调用 add_edge 和 add_node ，创建一个 subgraph 并返回。也就是前面提到的两大步骤里面的 generate_subgraph。
 
 
 # 数据结构
