@@ -1,8 +1,8 @@
 ---
-layout: default
 date: 2026-05-18 11:28:00 +0800
 title: "Tomcat Connection: close 排障记录"
 description: "OSG 网关 Tomcat BIO 线程池耗尽导致 keep-alive 连接被提前关闭的排查与修复"
+layout: post
 ---
 
 Author: claudecode+opus4.6
