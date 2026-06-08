@@ -292,3 +292,76 @@ NIO connector 使用 I/O 多路复用，空闲 keep-alive 连接不占线程。1
 以下状态码会触发 Tomcat 关闭 keep-alive 连接：
 
 `400` · `408` · `411` · `413` · `414` · `500` · `501` · `503`
+
+---
+
+## 续：切换 NIO 之后剩余的短连接分析（2026-06-08）
+
+切换到 `Http11NioProtocol` 之后，原先大量"建连即关闭"的 syn/fin 对显著减少，但仍能观察到一部分 TCP 连接生命周期很短、只承载一个请求就被关掉。再次抓包分析。
+
+### 抓包时间轴
+
+```
+# tcpdump -nn -r /tmp/10.115.39.142.dump -A 'port 46160'
+```
+
+| 时刻 | 事件 |
+|------|------|
+| 18:45:38.844133 | client SYN |
+| 18:45:38.844242 | 三次握手完成 |
+| 18:45:38.844259 | client 发出 `POST /api/CMSGetServer/?_version=new` |
+| 18:45:38.854101 – .854188 | server 分多段返回 200 OK（chunked） |
+| 18:45:38.854253 | client ACK 最后一段 |
+| **18:45:59.233153** | **server 主动发 FIN** |
+| 18:45:59.233264 | client 回 FIN-ACK |
+
+请求侧关键信息：
+- `User-Agent: Java/25`
+- 没有 `Connection: close`
+- HTTP/1.1
+- 响应 200 OK，无 `Connection: close`
+
+### 关键差异
+
+这个连接**并不是"建连后立刻 finish"**：
+- 实际存活 **20.379 秒**
+- **server 端（10.108.4.10:80）先发 FIN**
+- 期间只承载 1 个 HTTP 请求
+
+20.4 秒几乎一定是 Tomcat 的 **`keepAliveTimeout`** 计时器到期。Tomcat NIO 默认 `keepAliveTimeout` = `connectionTimeout` = **20000ms**，与抓包 idle 时长完全吻合。
+
+也就是说，**server 这一侧的行为是完全正常的**：HTTP/1.1 keep-alive，连接处理完一个请求后空闲 20s 没有新请求，服务端按配置主动回收。
+
+### 真正异常的地方在 client 侧
+
+这条连接只承载 1 个请求就被晾在那里 20s 等回收，相当于"用一次就丢"。这才是切换 NIO 后剩余 syn/fin 对偏多的根本原因——**client 没有复用连接**。
+
+可能的原因：
+
+1. **`User-Agent: Java/25` 是 `java.net.HttpURLConnection` 的默认 UA**（Apache HttpClient / OkHttp 都会换成自己的 UA）。`HttpURLConnection` 的 keep-alive 复用条件很苛刻：
+   - 必须把响应 `InputStream` 完整读到 EOF 并 close
+   - 不能调用 `disconnect()`（直接关流）
+   - `http.maxConnections`（默认 5）和 `http.keepAlive=true` 都得满足
+   - 任何一个条件不满足，连接就不进 `KeepAliveCache`
+2. **请求频率与超时不匹配**：如果调用方是定时任务/批处理（> 20s 一次），无论池子做得多好，下一次请求来时连接已被回收
+3. **短生命周期 JVM**：CLI / Job 进程退出时连接池一起销毁，等价于每次都新建
+
+### 排查方向
+
+| 优先级 | 方向 | 说明 |
+|--------|------|------|
+| 高 | 确认 client 是谁、用什么 HTTP 库 | 10.115.39.142 上跑的什么应用？是 `HttpURLConnection` / Apache HttpClient / OkHttp / `RestTemplate`？是否启用连接池 |
+| 高 | 看请求间隔分布 | server 侧按源 IP+UA 聚合：P50 间隔 > 20s 时再优化复用也救不了 |
+| 中 | server 侧调大超时（兜底） | `keepAliveTimeout="60000"`、`maxKeepAliveRequests="-1"`；权衡 worker/socket 资源 |
+| 中 | client 改造（`HttpURLConnection`） | 避免 `disconnect()`、完整消费响应体；或改造为 Apache HttpClient / OkHttp + `PoolingHttpClientConnectionManager` |
+| 低 | 验证 | 抓同一 client 的连接序列，看是否在打开新连接前已有可复用的 ESTABLISHED 连接 |
+
+### 小结
+
+| | 第一次排查（BIO） | 续：NIO 之后剩余的短连接 |
+|---|---|---|
+| 现象 | 200 响应也带 `Connection: close` | 响应不带 `Connection: close`，但连接只用 1 次 |
+| 触发方 | server (Tomcat 自保护) | server (keep-alive timeout) |
+| 时间特征 | 一条连接处理 < 10 个请求即关闭 | 单请求 + 20s 空闲 + server FIN |
+| 根因 | BIO 线程池耗尽 | client 没有复用连接 |
+| 修复方向 | server 侧切 NIO | client 侧用连接池；server 侧调大 `keepAliveTimeout` 兜底 |
